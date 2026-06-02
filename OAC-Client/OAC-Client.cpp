@@ -12,6 +12,7 @@
 #define IOCTL_INITIALIZE_WFP_MONITOR      CTL_CODE(FILE_DEVICE_UNKNOWN, 0x804, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_DEINITIALIZE_WFP_MONITOR    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x805, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_TRIGGER_DSE_CHECK           CTL_CODE(FILE_DEVICE_UNKNOWN, 0x806, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_IMPORT_SCAN         CTL_CODE(FILE_DEVICE_UNKNOWN, 0x807, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 // The symbolic link name for the driver.
 const wchar_t* G_SYMLINK_NAME = L"\\\\.\\OAC6";
@@ -127,6 +128,24 @@ void TriggerDseCheck(HANDLE hDevice)
         std::cout << "[+] DSE check complete. Review kernel debugger output for violations." << std::endl;
 }
 
+void TriggerImportScan(HANDLE hDevice)
+{
+    std::cout << "[!] Sending IOCTL to run suspicious import scan on all loaded drivers." << std::endl;
+    DWORD bytesReturned = 0;
+    BOOL  success       = DeviceIoControl(
+        hDevice,
+        IOCTL_TRIGGER_IMPORT_SCAN,
+        nullptr, 0,
+        nullptr, 0,
+        &bytesReturned,
+        nullptr);
+
+    if (!success)
+        std::cerr << "[-] DeviceIoControl for Import Scan failed: " << GetLastError() << std::endl;
+    else
+        std::cout << "[+] Import scan complete. Review kernel debugger output for suspicious drivers." << std::endl;
+}
+
 void SendUnloadRequest(HANDLE hDevice)
 {
     std::cout << "[!] Sending IOCTL to unload the driver." << std::endl;
@@ -190,6 +209,7 @@ int main()
         std::cout << "  4. De-initialize WFP Network Monitor" << std::endl;
         std::cout << "  5. Unload Driver" << std::endl;
         std::cout << "  6. Run DSE Integrity Checks" << std::endl;
+        std::cout << "  7. Run Suspicious Import Scan" << std::endl;
         std::cout << "  0. Exit Client" << std::endl;
         std::cout << "------------------------------------------" << std::endl;
         std::cout << "Your choice: ";
@@ -220,6 +240,9 @@ int main()
                 break;
             case 6:
                 TriggerDseCheck(hDevice);
+                break;
+            case 7:
+                TriggerImportScan(hDevice);
                 break;
             case 0:
                 running = false;

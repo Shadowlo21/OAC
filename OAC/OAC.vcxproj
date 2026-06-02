@@ -172,6 +172,7 @@
     <ClCompile Include="detections\wfp_monitor.c" />
     <ClCompile Include="detections\shellcode_analyzer.c" />
     <ClCompile Include="detections\pt_analyzer.c" />
+    <ClCompile Include="detections\import_scan.c" />
 
     <!-- util -->
     <ClCompile Include="util\module.c" />
@@ -205,6 +206,7 @@
     <ClInclude Include="detections\wfp_monitor.h" />
     <ClInclude Include="detections\shellcode_analyzer.h" />
     <ClInclude Include="detections\pt_analyzer.h" />
+    <ClInclude Include="detections\import_scan.h" />
 
     <!-- util -->
     <ClInclude Include="util\module.h" />

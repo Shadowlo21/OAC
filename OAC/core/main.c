@@ -16,6 +16,7 @@
 
 #include "cr3_thrasher.h"
 #include "dse_check.h"
+#include "import_scan.h"
 #include "internals.h"
 #include "stackwalk.h"
 #include "wfp_monitor.h"
@@ -30,6 +31,7 @@
 #define IOCTL_INITIALIZE_WFP_MONITOR      CTL_CODE(FILE_DEVICE_UNKNOWN, 0x804, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_DEINITIALIZE_WFP_MONITOR    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x805, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_TRIGGER_DSE_CHECK           CTL_CODE(FILE_DEVICE_UNKNOWN, 0x806, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_IMPORT_SCAN         CTL_CODE(FILE_DEVICE_UNKNOWN, 0x807, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 
 // =================================================================================================
@@ -283,6 +285,11 @@ NTSTATUS IrpDeviceIoCtlHandler(
         case IOCTL_TRIGGER_DSE_CHECK:
             DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_DSE_CHECK received\n");
             Status = RunDseChecks();
+            break;
+
+        case IOCTL_TRIGGER_IMPORT_SCAN:
+            DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_IMPORT_SCAN received\n");
+            Status = RunImportScan();
             break;
 
         case IOCTL_UNLOAD_DRIVER:

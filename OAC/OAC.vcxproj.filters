@@ -57,6 +57,9 @@
     <ClCompile Include="detections\pt_analyzer.c">
       <Filter>detections</Filter>
     </ClCompile>
+    <ClCompile Include="detections\import_scan.c">
+      <Filter>detections</Filter>
+    </ClCompile>
 
     <ClCompile Include="util\module.c">
       <Filter>util</Filter>
@@ -111,6 +114,9 @@
       <Filter>detections</Filter>
     </ClInclude>
     <ClInclude Include="detections\pt_analyzer.h">
+      <Filter>detections</Filter>
+    </ClInclude>
+    <ClInclude Include="detections\import_scan.h">
       <Filter>detections</Filter>
     </ClInclude>
 
