@@ -102,7 +102,7 @@ NTSTATUS InitializeWfpMonitor(
     Status = FwpmEngineOpen0(NULL, RPC_C_AUTHN_WINNT, NULL, NULL, &G_WfpEngineHandle);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] Failed to open WFP engine handle: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to open WFP engine handle: 0x%X\n", Status);
         goto Exit;
     }
     EngineOpened = TRUE;
@@ -111,7 +111,7 @@ NTSTATUS InitializeWfpMonitor(
     Status = FwpmTransactionBegin0(G_WfpEngineHandle, 0);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] Failed to begin WFP transaction: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to begin WFP transaction: 0x%X\n", Status);
         goto Exit;
     }
     InTransaction = TRUE;
@@ -125,7 +125,7 @@ NTSTATUS InitializeWfpMonitor(
     Status                           = FwpmSubLayerAdd0(G_WfpEngineHandle, &SubLayer, NULL);
     if (!NT_SUCCESS(Status) && Status != STATUS_FWP_ALREADY_EXISTS)
     {
-        DbgPrint("[-] Failed to add WFP sublayer: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to add WFP sublayer: 0x%X\n", Status);
         goto Exit;
     }
 
@@ -142,7 +142,7 @@ NTSTATUS InitializeWfpMonitor(
     Status = FwpsCalloutRegister0(DeviceObject, &Callout, &G_WfpV4CalloutId);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] Failed to register WFP IPv4 callout: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to register WFP IPv4 callout: 0x%X\n", Status);
         goto Exit;
     }
     CalloutV4Added = TRUE;
@@ -153,7 +153,7 @@ NTSTATUS InitializeWfpMonitor(
     Status                   = FwpmCalloutAdd0(G_WfpEngineHandle, &MCallout, NULL, NULL);
     if (!NT_SUCCESS(Status) && Status != STATUS_FWP_ALREADY_EXISTS)
     {
-        DbgPrint("[-] Failed to add WFP IPv4 callout metadata: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to add WFP IPv4 callout metadata: 0x%X\n", Status);
         goto Exit;
     }
 
@@ -162,7 +162,7 @@ NTSTATUS InitializeWfpMonitor(
     Status             = FwpsCalloutRegister0(DeviceObject, &Callout, &G_WfpV6CalloutId);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] Failed to register WFP IPv6 callout: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to register WFP IPv6 callout: 0x%X\n", Status);
         goto Exit;
     }
     CalloutV6Added = TRUE;
@@ -172,7 +172,7 @@ NTSTATUS InitializeWfpMonitor(
     Status                   = FwpmCalloutAdd0(G_WfpEngineHandle, &MCallout, NULL, NULL);
     if (!NT_SUCCESS(Status) && Status != STATUS_FWP_ALREADY_EXISTS)
     {
-        DbgPrint("[-] Failed to add WFP IPv6 callout metadata: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to add WFP IPv6 callout metadata: 0x%X\n", Status);
         goto Exit;
     }
 
@@ -190,7 +190,7 @@ NTSTATUS InitializeWfpMonitor(
     Status                   = FwpmFilterAdd0(G_WfpEngineHandle, &Filter, NULL, &G_WfpV4FilterId);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] Failed to add WFP IPv4 filter: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to add WFP IPv4 filter: 0x%X\n", Status);
         goto Exit;
     }
 
@@ -200,7 +200,7 @@ NTSTATUS InitializeWfpMonitor(
     Status                   = FwpmFilterAdd0(G_WfpEngineHandle, &Filter, NULL, &G_WfpV6FilterId);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] Failed to add WFP IPv6 filter: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to add WFP IPv6 filter: 0x%X\n", Status);
         goto Exit;
     }
 
@@ -209,12 +209,12 @@ NTSTATUS InitializeWfpMonitor(
     Status = FwpmTransactionCommit0(G_WfpEngineHandle);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] Failed to commit WFP transaction: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to commit WFP transaction: 0x%X\n", Status);
         goto Exit;
     }
     InTransaction = FALSE; // Transaction is committed.
 
-    DbgPrint("[+] WFP monitor initialized successfully.\n");
+    DbgPrintEx(0,0,"[+] WFP monitor initialized successfully.\n");
 
 Exit:
     if (!NT_SUCCESS(Status))
@@ -224,11 +224,11 @@ Exit:
             NTSTATUS CleanStatus = FwpmTransactionAbort0(G_WfpEngineHandle);
             if (!NT_SUCCESS(CleanStatus))
             {
-                DbgPrint("[-] Failed to abort WFP transaction: 0x%X\n", CleanStatus);
+                DbgPrintEx(0,0,"[-] Failed to abort WFP transaction: 0x%X\n", CleanStatus);
             }
             else
             {
-                DbgPrint("[*] WFP transaction aborted due to error.\n");
+                DbgPrintEx(0,0,"[*] WFP transaction aborted due to error.\n");
             }
         }
         if (CalloutV4Added)
@@ -236,11 +236,11 @@ Exit:
             NTSTATUS CleanStatus = FwpsCalloutUnregisterById0(G_WfpV4CalloutId);
             if (!NT_SUCCESS(CleanStatus))
             {
-                DbgPrint("[-] Failed to unregister WFP IPv4 callout: 0x%X\n", CleanStatus);
+                DbgPrintEx(0,0,"[-] Failed to unregister WFP IPv4 callout: 0x%X\n", CleanStatus);
             }
             else
             {
-                DbgPrint("[*] WFP IPv4 callout unregistered due to error.\n");
+                DbgPrintEx(0,0,"[*] WFP IPv4 callout unregistered due to error.\n");
             }
         }
         if (CalloutV6Added)
@@ -248,39 +248,39 @@ Exit:
             NTSTATUS CleanStatus = FwpsCalloutUnregisterById0(G_WfpV6CalloutId);
             if (!NT_SUCCESS(CleanStatus))
             {
-                DbgPrint("[-] Failed to unregister WFP IPv6 callout: 0x%X\n", CleanStatus);
+                DbgPrintEx(0,0,"[-] Failed to unregister WFP IPv6 callout: 0x%X\n", CleanStatus);
             }
             else
             {
-                DbgPrint("[*] WFP IPv6 callout unregistered due to error.\n");
+                DbgPrintEx(0,0,"[*] WFP IPv6 callout unregistered due to error.\n");
             }
         }
         if (EngineOpened)
         {
             // --- TRANSACTION BEGIN ---
             if (!NT_SUCCESS(FwpmTransactionBegin0(G_WfpEngineHandle, 0)))
-                DbgPrint("[-] Failed to begin WFP cleanup transaction.\n");
+                DbgPrintEx(0,0,"[-] Failed to begin WFP cleanup transaction.\n");
 
             if (!NT_SUCCESS(FwpmFilterDeleteById0(G_WfpEngineHandle, G_WfpV4FilterId)))
-                DbgPrint("[-] Failed to delete WFP IPv4 filter during cleanup.\n");
+                DbgPrintEx(0,0,"[-] Failed to delete WFP IPv4 filter during cleanup.\n");
             if (!NT_SUCCESS(FwpmFilterDeleteById0(G_WfpEngineHandle, G_WfpV6FilterId)))
-                DbgPrint("[-] Failed to delete WFP IPv6 filter during cleanup.\n");
+                DbgPrintEx(0,0,"[-] Failed to delete WFP IPv6 filter during cleanup.\n");
             if (!NT_SUCCESS(FwpmCalloutDeleteById0(G_WfpEngineHandle, G_WfpV4CalloutId)))
-                DbgPrint("[-] Failed to delete WFP IPv4 callout during cleanup.\n");
+                DbgPrintEx(0,0,"[-] Failed to delete WFP IPv4 callout during cleanup.\n");
             if (!NT_SUCCESS(FwpmCalloutDeleteById0(G_WfpEngineHandle, G_WfpV6CalloutId)))
-                DbgPrint("[-] Failed to delete WFP IPv6 callout during cleanup.\n");
+                DbgPrintEx(0,0,"[-] Failed to delete WFP IPv6 callout during cleanup.\n");
             if (!NT_SUCCESS(FwpmSubLayerDeleteByKey0(G_WfpEngineHandle, &WFP_SUBLAYER_GUID)))
-                DbgPrint("[-] Failed to delete WFP sublayer during cleanup.\n");
+                DbgPrintEx(0,0,"[-] Failed to delete WFP sublayer during cleanup.\n");
 
             if (!NT_SUCCESS(FwpmTransactionCommit0(G_WfpEngineHandle)))
-                DbgPrint("[-] Failed to commit WFP cleanup transaction.\n");
+                DbgPrintEx(0,0,"[-] Failed to commit WFP cleanup transaction.\n");
             // --- TRANSACTION END ---
 
             FwpmEngineClose0(G_WfpEngineHandle);
             G_WfpV4CalloutId  = 0;
             G_WfpV6CalloutId  = 0;
             G_WfpEngineHandle = NULL;
-            DbgPrint("[*] WFP engine handle closed due to error.\n");
+            DbgPrintEx(0,0,"[*] WFP engine handle closed due to error.\n");
         }
     }
     return Status;
@@ -301,11 +301,11 @@ VOID DeinitializeWfpMonitor(VOID)
         NTSTATUS ClearStatus = FwpsCalloutUnregisterById0(G_WfpV4CalloutId);
         if (!NT_SUCCESS(ClearStatus))
         {
-            DbgPrint("[-] Failed to unregister WFP IPv4 callout: 0x%X\n", ClearStatus);
+            DbgPrintEx(0,0,"[-] Failed to unregister WFP IPv4 callout: 0x%X\n", ClearStatus);
         }
         else
         {
-            DbgPrint("[*] WFP IPv4 callout unregistered.\n");
+            DbgPrintEx(0,0,"[*] WFP IPv4 callout unregistered.\n");
         }
     }
     if (G_WfpV6CalloutId)
@@ -313,11 +313,11 @@ VOID DeinitializeWfpMonitor(VOID)
         NTSTATUS ClearStatus = FwpsCalloutUnregisterById0(G_WfpV6CalloutId);
         if (!NT_SUCCESS(ClearStatus))
         {
-            DbgPrint("[-] Failed to unregister WFP IPv6 callout: 0x%X\n", ClearStatus);
+            DbgPrintEx(0,0,"[-] Failed to unregister WFP IPv6 callout: 0x%X\n", ClearStatus);
         }
         else
         {
-            DbgPrint("[+] WFP IPv6 callout unregistered.\n");
+            DbgPrintEx(0,0,"[+] WFP IPv6 callout unregistered.\n");
         }
     }
 
@@ -325,28 +325,28 @@ VOID DeinitializeWfpMonitor(VOID)
     {
         // --- TRANSACTION BEGIN ---
         if (!NT_SUCCESS(FwpmTransactionBegin0(G_WfpEngineHandle, 0)))
-            DbgPrint("[-] Failed to begin WFP cleanup transaction.\n");
+            DbgPrintEx(0,0,"[-] Failed to begin WFP cleanup transaction.\n");
 
         if (!NT_SUCCESS(FwpmFilterDeleteById0(G_WfpEngineHandle, G_WfpV4FilterId)))
-            DbgPrint("[-] Failed to delete WFP IPv4 filter during cleanup.\n");
+            DbgPrintEx(0,0,"[-] Failed to delete WFP IPv4 filter during cleanup.\n");
         if (!NT_SUCCESS(FwpmFilterDeleteById0(G_WfpEngineHandle, G_WfpV6FilterId)))
-            DbgPrint("[-] Failed to delete WFP IPv6 filter during cleanup.\n");
+            DbgPrintEx(0,0,"[-] Failed to delete WFP IPv6 filter during cleanup.\n");
         if (!NT_SUCCESS(FwpmCalloutDeleteById0(G_WfpEngineHandle, G_WfpV4CalloutId)))
-            DbgPrint("[-] Failed to delete WFP IPv4 callout during cleanup.\n");
+            DbgPrintEx(0,0,"[-] Failed to delete WFP IPv4 callout during cleanup.\n");
         if (!NT_SUCCESS(FwpmCalloutDeleteById0(G_WfpEngineHandle, G_WfpV6CalloutId)))
-            DbgPrint("[-] Failed to delete WFP IPv6 callout during cleanup.\n");
+            DbgPrintEx(0,0,"[-] Failed to delete WFP IPv6 callout during cleanup.\n");
         if (!NT_SUCCESS(FwpmSubLayerDeleteByKey0(G_WfpEngineHandle, &WFP_SUBLAYER_GUID)))
-            DbgPrint("[-] Failed to delete WFP sublayer during cleanup.\n");
+            DbgPrintEx(0,0,"[-] Failed to delete WFP sublayer during cleanup.\n");
 
         if (!NT_SUCCESS(FwpmTransactionCommit0(G_WfpEngineHandle)))
-            DbgPrint("[-] Failed to commit WFP cleanup transaction.\n");
+            DbgPrintEx(0,0,"[-] Failed to commit WFP cleanup transaction.\n");
         // --- TRANSACTION END ---
 
         FwpmEngineClose0(G_WfpEngineHandle);
         G_WfpV4CalloutId  = 0;
         G_WfpV6CalloutId  = 0;
         G_WfpEngineHandle = NULL;
-        DbgPrint("[+] WFP engine handle closed.\n");
+        DbgPrintEx(0,0,"[+] WFP engine handle closed.\n");
     }
 }
 
@@ -372,7 +372,7 @@ VOID NTAPI WfpConnectCallout(
     UNREFERENCED_PARAMETER(Filter);
     UNREFERENCED_PARAMETER(FlowContext);
 
-    DbgPrint("[+] WfpConnectCallout invoked.\n");
+    DbgPrintEx(0,0,"[+] WfpConnectCallout invoked.\n");
 
     // By default, we permit the connection unless we find a reason to block it.
     ClassifyOut->actionType = FWP_ACTION_PERMIT;
@@ -384,7 +384,7 @@ VOID NTAPI WfpConnectCallout(
 
     if (ProcessId == 0 || ThreadId == 0)
     {
-        DbgPrint("[-] Unable to retrieve ProcessId or ThreadId. Permitting connection.\n");
+        DbgPrintEx(0,0,"[-] Unable to retrieve ProcessId or ThreadId. Permitting connection.\n");
         return; // Not enough info, permit.
     }
 
@@ -393,11 +393,11 @@ VOID NTAPI WfpConnectCallout(
     {
         SerialLoggerWrite("Shellcode detected in process %p, thread %p. Blocking connection.", ProcessId, ThreadId);
         // The analyzer found evidence of shellcode. Block the connection.
-        DbgPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        DbgPrint("!!! REVERSE SHELL SHELLCODE DETECTED! BLOCKING OUTBOUND CONNECTION.\n");
-        DbgPrint("!!! Process ID: %p\n", ProcessId);
-        DbgPrint("!!! Thread ID:  %p\n", ThreadId);
-        DbgPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        DbgPrintEx(0,0,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        DbgPrintEx(0,0,"!!! REVERSE SHELL SHELLCODE DETECTED! BLOCKING OUTBOUND CONNECTION.\n");
+        DbgPrintEx(0,0,"!!! Process ID: %p\n", ProcessId);
+        DbgPrintEx(0,0,"!!! Thread ID:  %p\n", ThreadId);
+        DbgPrintEx(0,0,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
         ClassifyOut->actionType = FWP_ACTION_BLOCK;
         ClassifyOut->rights &= ~FWPS_RIGHT_ACTION_WRITE; // Prevent further modification.
@@ -421,7 +421,7 @@ NTSTATUS NTAPI WfpNotifyCallback(
     // to handle any notifications for this simple filter.
     if (NotifyType == FWPS_CALLOUT_NOTIFY_DELETE_FILTER)
     {
-        DbgPrint("[+] WFP filter deleted.\n");
+        DbgPrintEx(0,0,"[+] WFP filter deleted.\n");
     }
 
     return STATUS_SUCCESS;

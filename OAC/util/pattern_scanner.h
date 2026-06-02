@@ -65,7 +65,7 @@ inline SIGNATURE ParseSignature(
             continue;
         }
 
-        // Expect hex token (1–2 chars)
+        // Expect hex token (1ï¿½2 chars)
         CHAR Buf[3] = {0};
         Buf[0]      = *SigCursor++;
         if (*SigCursor && *SigCursor != ' ' && *SigCursor != '\t' && *SigCursor != '\r' && *SigCursor != '\n')
@@ -171,6 +171,62 @@ inline UINT64 PatternScan(
         UCHAR  LastByte = *(UCHAR*)(CurrentAddress + PatternSize - 1);
         SIZE_T Jump     = SkipTable[LastByte];
         CurrentAddress += Jump;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Page-validated wrapper around PatternScan for scanning kernel module images.
+ *
+ * Kernel modules have Discardable sections (INIT, GFIDS, .rsrc, .reloc) whose
+ * backing pages are freed after driver initialization.  Their PTEs become zero.
+ * Calling PatternScan directly across SizeOfImage hits these pages and causes
+ * PAGE_FAULT_IN_NONPAGED_AREA (bugcheck 0x50), which __try/__except cannot catch.
+ *
+ * This wrapper walks the range one page at a time, skips any page that
+ * MmIsAddressValid reports as invalid, and forwards each contiguous valid segment
+ * to PatternScan.  A pattern that starts in a valid page and ends in a discarded
+ * page will not be found â€” correct, since discarded sections hold no code.
+ *
+ * @param[in] StartAddress Base address of the region to scan (e.g. module base).
+ * @param[in] SearchSize   Number of bytes to cover (e.g. SizeOfImage).
+ * @param[in] Sign         Pattern string with optional '?' wildcards.
+ * @return Address of the first match, or 0 if none found.
+ */
+inline UINT64 SafePatternScan(
+    _In_ UINT64 StartAddress,
+    _In_ SIZE_T SearchSize,
+    _In_ PCSTR  Sign
+)
+{
+    const UINT64 PageSize = 0x1000;
+    UINT64       End      = StartAddress + SearchSize;
+    UINT64       SegStart = 0;
+
+    for (UINT64 Page = (StartAddress & ~(PageSize - 1)); Page < End; Page += PageSize)
+    {
+        if (MmIsAddressValid((PVOID)Page))
+        {
+            if (!SegStart) SegStart = Page;
+        }
+        else
+        {
+            if (SegStart)
+            {
+                UINT64 From = (SegStart > StartAddress) ? SegStart : StartAddress;
+                UINT64 Hit  = PatternScan(From, Page - From, Sign);
+                if (Hit) return Hit;
+                SegStart = 0;
+            }
+        }
+    }
+
+    if (SegStart)
+    {
+        UINT64 From = (SegStart > StartAddress) ? SegStart : StartAddress;
+        UINT64 Hit  = PatternScan(From, End - From, Sign);
+        if (Hit) return Hit;
     }
 
     return 0;

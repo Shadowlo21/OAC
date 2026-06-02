@@ -68,7 +68,7 @@ PVOID FindModuleByName2(
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        DbgPrint("[-] Exception while accessing PsLoadedModuleList.\n");
+        DbgPrintEx(0,0,"[-] Exception while accessing PsLoadedModuleList.\n");
         return NULL;
     }
 
@@ -114,7 +114,7 @@ PVOID FindUserModuleByName(
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        DbgPrint("[-] Exception while accessing user-mode module list.\n");
+        DbgPrintEx(0,0,"[-] Exception while accessing user-mode module list.\n");
         return NULL;
     }
     return ModuleBase;
@@ -164,7 +164,7 @@ PVOID FindExportedFunction(
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
-        DbgPrint("[-] Exception while parsing PE export table for module at 0x%p.\n", ModuleBase);
+        DbgPrintEx(0,0,"[-] Exception while parsing PE export table for module at 0x%p.\n", ModuleBase);
         return NULL;
     }
 

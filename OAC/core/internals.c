@@ -60,15 +60,15 @@ static VOID InitializeRtlLookupFunctionEntryUsermode(VOID)
         PVOID NtdllBaseAddress = FindUserModuleByName(PsGetCurrentProcess(), L"ntdll.dll");
         if (!NtdllBaseAddress)
         {
-            DbgPrint("[-] Failed to locate ntdll.dll in target process.\n");
+            DbgPrintEx(0,0,"[-] Failed to locate ntdll.dll in target process.\n");
             return;
         }
 
-        DbgPrint("[*] ntdll.dll base address in target process: 0x%p\n", NtdllBaseAddress);
+        DbgPrintEx(0,0,"[*] ntdll.dll base address in target process: 0x%p\n", NtdllBaseAddress);
 
 #pragma warning(suppress : 4152) // Suppress warning about function pointer cast.
         RtlLookupFunctionEntryUsermode = FindExportedFunction(NtdllBaseAddress, "RtlLookupFunctionEntry");
-        DbgPrint("[*] RtlLookupFunctionEntryUsermode address: 0x%p\n", RtlLookupFunctionEntryUsermode);
+        DbgPrintEx(0,0,"[*] RtlLookupFunctionEntryUsermode address: 0x%p\n", RtlLookupFunctionEntryUsermode);
     }
 }
 
@@ -88,13 +88,13 @@ static VOID InitializeRtlpLookupFunctionEntryForStackWalks(VOID)
         SIZE_T NtosKrnlSize        = 0;
         PVOID  NtosKrnlBaseAddress = FindModuleByName2(L"ntoskrnl.exe", &NtosKrnlSize);
 
-        DbgPrint("[*] ntoskrnl.exe base address: 0x%p, size: 0x%Ix\n", NtosKrnlBaseAddress, NtosKrnlSize);
+        DbgPrintEx(0,0,"[*] ntoskrnl.exe base address: 0x%p, size: 0x%Ix\n", NtosKrnlBaseAddress, NtosKrnlSize);
 
 #pragma warning(suppress : 4152) // Suppress warning about function pointer cast.
         RtlpLookupFunctionEntryForStackWalks = (PVOID)PatternScan((UINT64)NtosKrnlBaseAddress, NtosKrnlSize,
                                                                   "48 89 5C 24 ? 48 89 74 24 ? 48 89 54 24 ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 0F 82");
 
-        DbgPrint("[*] RtlpLookupFunctionEntryForStackWalks address: 0x%p\n", RtlpLookupFunctionEntryForStackWalks);
+        DbgPrintEx(0,0,"[*] RtlpLookupFunctionEntryForStackWalks address: 0x%p\n", RtlpLookupFunctionEntryForStackWalks);
     }
 }
 
@@ -134,4 +134,5 @@ VOID InitializeInternals(VOID)
     InitializeRtlpLookupFunctionEntryForStackWalks();
     InitializeUnwindingIdt();
     InitializePsActiveProcessHead();
+    ResolveCiFunctions();
 }

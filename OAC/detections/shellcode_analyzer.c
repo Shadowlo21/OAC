@@ -67,14 +67,14 @@ BOOLEAN AnalyzeThreadForShellcode(
     Status = PsLookupProcessByProcessId(ProcessId, &Process);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] PsLookupProcessByProcessId failed: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] PsLookupProcessByProcessId failed: 0x%X\n", Status);
         return FALSE;
     }
 
     Status = PsLookupThreadByThreadId(ThreadId, &Thread);
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] PsLookupThreadByThreadId failed: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] PsLookupThreadByThreadId failed: 0x%X\n", Status);
         ObDereferenceObject(Process);
         return FALSE;
     }
@@ -88,7 +88,7 @@ BOOLEAN AnalyzeThreadForShellcode(
     // TODO: Implement thread pinning routine.
     if (OriginalCr3 != ProcessDtb)
     {
-        DbgPrint("[-] Current CR3 (0x%llX) does not match target process DTB (0x%llX). Skipping analysis.\n",
+        DbgPrintEx(0,0,"[-] Current CR3 (0x%llX) does not match target process DTB (0x%llX). Skipping analysis.\n",
                  OriginalCr3, ProcessDtb);
         ObDereferenceObject(Thread);
         ObDereferenceObject(Process);
@@ -103,7 +103,7 @@ BOOLEAN AnalyzeThreadForShellcode(
         PKTRAP_FRAME TrapFrame = (PKTRAP_FRAME)Thread->Tcb.TrapFrame;
         if (!TrapFrame)
         {
-            DbgPrint("[-] Thread has no trap frame; cannot analyze.\n");
+            DbgPrintEx(0,0,"[-] Thread has no trap frame; cannot analyze.\n");
             __leave;
         }
 
@@ -119,12 +119,12 @@ BOOLEAN AnalyzeThreadForShellcode(
         }
 
         // First, check the current return address.
-        DbgPrint("[*] Scanning address: 0x%llx for PID: %p and TID: %p. DTB: 0x%llX\n",
+        DbgPrintEx(0,0,"[*] Scanning address: 0x%llx for PID: %p and TID: %p. DTB: 0x%llX\n",
                  ContextRecord.Rip, ProcessId, ThreadId, ProcessDtb);
 
         if (IsMemoryRwAndContainsSignature((PVOID)ContextRecord.Rip))
         {
-            DbgPrint("[!!!] Shellcode signature found at RIP: 0x%llX\n", ContextRecord.Rip);
+            DbgPrintEx(0,0,"[!!!] Shellcode signature found at RIP: 0x%llX\n", ContextRecord.Rip);
             IsSuspicious = TRUE;
             __leave;
         }
@@ -137,22 +137,22 @@ BOOLEAN AnalyzeThreadForShellcode(
 
         if (!StackWalkValid)
         {
-            DbgPrint("[-] Unwind failed at RIP: 0x%llX, Status: 0x%X\n", ContextRecord.Rip, Status);
+            DbgPrintEx(0,0,"[-] Unwind failed at RIP: 0x%llX, Status: 0x%X\n", ContextRecord.Rip, Status);
             __leave;
         }
 
         for (SIZE_T i = 0; i < FramesRetrieved; i++)
         {
-            DbgPrint("[*] Scanning address: 0x%llx for PID: %p and TID: %p. DTB: 0x%llX\n",
+            DbgPrintEx(0,0,"[*] Scanning address: 0x%llx for PID: %p and TID: %p. DTB: 0x%llX\n",
                      StackwalkFrames[i], ProcessId, ThreadId, ProcessDtb);
             if (IsMemoryRwAndContainsSignature((PVOID)StackwalkFrames[i]))
             {
-                DbgPrint("[!!!] Shellcode signature found at RIP: 0x%llX\n", StackwalkFrames[i]);
+                DbgPrintEx(0,0,"[!!!] Shellcode signature found at RIP: 0x%llX\n", StackwalkFrames[i]);
                 IsSuspicious = TRUE;
                 __leave;
             }
         }
-        DbgPrint("[*] No shellcode signatures found in stack walk.\n");
+        DbgPrintEx(0,0,"[*] No shellcode signatures found in stack walk.\n");
     }
     __finally
     {
@@ -196,14 +196,14 @@ static BOOLEAN IsMemoryRwAndContainsSignature(
 
     if (!NT_SUCCESS(Status) || BytesReturned != sizeof(MemoryInfo))
     {
-        DbgPrint("[-] ZwQueryVirtualMemory failed: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] ZwQueryVirtualMemory failed: 0x%X\n", Status);
         return FALSE;
     }
 
     // The key indicator: Is the page executable, readable, AND writable?
     if (MemoryInfo.Protect == PAGE_EXECUTE_READWRITE)
     {
-        DbgPrint("[*] Found RWX memory region at base: 0x%p\n", MemoryInfo.BaseAddress);
+        DbgPrintEx(0,0,"[*] Found RWX memory region at base: 0x%p\n", MemoryInfo.BaseAddress);
         // The region is suspicious. Now scan it for our shellcode signature.
         __try
         {

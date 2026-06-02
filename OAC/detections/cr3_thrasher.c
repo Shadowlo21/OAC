@@ -46,18 +46,18 @@ VOID TriggerCr3Thrash(VOID)
     PageTablePool = MmAllocateContiguousMemory(PAGE_SIZE * PAGE_TABLE_POOL_PAGES, (PHYSICAL_ADDRESS){.QuadPart = -1});
     if (!PageTablePool)
     {
-        DbgPrint("[-] MmAllocateContiguousMemory failed\n");
+        DbgPrintEx(0,0,"[-] MmAllocateContiguousMemory failed\n");
         return;
     }
 
     // Print page table pool address
-    DbgPrint("[*] Page table pool VA: 0x%p\n", PageTablePool);
+    DbgPrintEx(0,0,"[*] Page table pool VA: 0x%p\n", PageTablePool);
 
     RtlZeroMemory(PageTablePool, PAGE_SIZE * PAGE_TABLE_POOL_PAGES);
     NewPml4Pa = MmGetPhysicalAddress(PageTablePool);
 
     // Print physical address of the pool
-    DbgPrint("[*] Page table pool PA: 0x%llX\n", NewPml4Pa.QuadPart);
+    DbgPrintEx(0,0,"[*] Page table pool PA: 0x%llX\n", NewPml4Pa.QuadPart);
 
     // The first page of the pool is the PML4. Subsequent pages are allocated as needed.
     ULONG NextFreePageIdx = 1;
@@ -65,14 +65,14 @@ VOID TriggerCr3Thrash(VOID)
     // Pin execution to the current processor.
     KAFFINITY OldAffinity = KeSetSystemAffinityThreadEx((KAFFINITY)(1ULL << KeGetCurrentProcessorNumberEx(NULL)));
 
-    DbgPrint("[+] Pinning thread to current processor.\n");
+    DbgPrintEx(0,0,"[+] Pinning thread to current processor.\n");
 
     // Get the IDT
     SEGMENT_DESCRIPTOR_REGISTER_64 Idtr = {0};
     __sidt(&Idtr);
 
     // Step 1: Set up our minimal page tables
-    DbgPrint("[+] Dynamically mapping all the required pages...\n");
+    DbgPrintEx(0,0,"[+] Dynamically mapping all the required pages...\n");
 
     // Map all the required VAs. Our dynamic mapper will handle any index collisions.
 #pragma warning(suppress: 4152) // Suppress "function/data pointer conversion" warning
@@ -83,7 +83,7 @@ VOID TriggerCr3Thrash(VOID)
 
     // Map the current RIP region
     PVOID CurrentRip = GetRip();
-    DbgPrint("[*] Current RIP: 0x%p\n", CurrentRip);
+    DbgPrintEx(0,0,"[*] Current RIP: 0x%p\n", CurrentRip);
     MapVirtualAddressDynamically(PageTablePool, &NextFreePageIdx, CurrentRip);
 
     // Map also one page ahead (just in case)
@@ -98,7 +98,7 @@ VOID TriggerCr3Thrash(VOID)
 
     // Save the original CR3
     G_OriginalCr3 = __readcr3();
-    DbgPrint("[*] Original CR3: 0x%llX\n", G_OriginalCr3);
+    DbgPrintEx(0,0,"[*] Original CR3: 0x%llX\n", G_OriginalCr3);
 
     // Copy the original IDT to our global array for the ISR to use.
     RtlCopyMemory(Cr3ThrashIdtArray, (PVOID)Idtr.BaseAddress, sizeof(Cr3ThrashIdtArray));
@@ -135,7 +135,7 @@ VOID TriggerCr3Thrash(VOID)
     {
         // IST index is 0, which means we use the legacy mechanism. For a ring-0 interrupt,
         // the CPU will use the RSP0 field from the TSS.
-        DbgPrint("[*] Original Page Fault handler does not use IST. Using legacy RSP0 stack.\n");
+        DbgPrintEx(0,0,"[*] Original Page Fault handler does not use IST. Using legacy RSP0 stack.\n");
         StackTop  = Tss->Rsp0;
         StackBase = StackTop - 0x10000; // Assume 64KB maximum stack size
     }
@@ -143,7 +143,7 @@ VOID TriggerCr3Thrash(VOID)
     {
         // An IST index is specified. Get the stack top from the correct IST entry.
         // The TSS struct has Ist1..7, which corresponds to indices 1..7.
-        DbgPrint("[*] Original Page Fault handler IST index: %u\n", IstIndex);
+        DbgPrintEx(0,0,"[*] Original Page Fault handler IST index: %u\n", IstIndex);
         StackTop  = *(&Tss->Ist1 + (IstIndex - 1));
         StackBase = StackTop - 0x10000; // Assume 64KB maximum stack size
     }
@@ -154,8 +154,8 @@ VOID TriggerCr3Thrash(VOID)
         MapVirtualAddressDynamically(PageTablePool, &NextFreePageIdx, (PVOID)Addr);
     }
 
-    DbgPrint("[!!} Entering CRITICAL section. Disabling interrupts.\n");
-    DbgPrint("[!!] Swapping IDT entry and thrashing CR3...\n");
+    DbgPrintEx(0,0,"[!!} Entering CRITICAL section. Disabling interrupts.\n");
+    DbgPrintEx(0,0,"[!!] Swapping IDT entry and thrashing CR3...\n");
 
     // --- CRITICAL SECTION START ---
     _disable(); // Disable Interrupts
@@ -191,19 +191,19 @@ VOID TriggerCr3Thrash(VOID)
     _enable(); // Re-enable Interrupts
     // --- CRITICAL SECTION END ---
 
-    DbgPrint("[!!] CRITICAL section finished. System stable.\n");
+    DbgPrintEx(0,0,"[!!] CRITICAL section finished. System stable.\n");
 
     // Restore the original thread affinity.
     KeRevertToUserAffinityThreadEx(OldAffinity);
 
-    DbgPrint("[+] Thread affinity restored. Test complete.\n");
+    DbgPrintEx(0,0,"[+] Thread affinity restored. Test complete.\n");
 
     // Step 2: Clean up the memory we allocated
     if (PageTablePool)
     {
         MmFreeContiguousMemory(PageTablePool);
-        DbgPrint("[+] Freed page table memory.\n");
+        DbgPrintEx(0,0,"[+] Freed page table memory.\n");
     }
 
-    DbgPrint("[+] Test complete.\n");
+    DbgPrintEx(0,0,"[+] Test complete.\n");
 }

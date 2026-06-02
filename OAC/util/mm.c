@@ -29,7 +29,7 @@ NTSTATUS MapVirtualAddressDynamically(
     PHYSICAL_ADDRESS TargetPa = MmGetPhysicalAddress(TargetVa);
     if (TargetPa.QuadPart == 0)
     {
-        DbgPrint("[-] Target VA 0x%p is not mapped in current page tables.\n", TargetVa);
+        DbgPrintEx(0,0,"[-] Target VA 0x%p is not mapped in current page tables.\n", TargetVa);
         return STATUS_NOT_FOUND;
     }
 
@@ -51,7 +51,7 @@ NTSTATUS MapVirtualAddressDynamically(
         // No entry, allocate a new PDPT from our pool.
         if (*NextFreePageIndex >= PAGE_TABLE_POOL_PAGES)
         {
-            DbgPrint("[-] Out of page table memory in pool.\n");
+            DbgPrintEx(0,0,"[-] Out of page table memory in pool.\n");
             return STATUS_INSUFFICIENT_RESOURCES;
         }
         Pdpt = (PDPTE_64*)((PUCHAR)PoolBase + (*NextFreePageIndex) * PAGE_SIZE);
@@ -74,7 +74,7 @@ NTSTATUS MapVirtualAddressDynamically(
     {
         if (*NextFreePageIndex >= PAGE_TABLE_POOL_PAGES)
         {
-            DbgPrint("[-] Out of page table memory in pool.\n");
+            DbgPrintEx(0,0,"[-] Out of page table memory in pool.\n");
             return STATUS_INSUFFICIENT_RESOURCES;
         }
         Pd = (PDE_64*)((PUCHAR)PoolBase + (*NextFreePageIndex) * PAGE_SIZE);
@@ -97,7 +97,7 @@ NTSTATUS MapVirtualAddressDynamically(
     {
         if (*NextFreePageIndex >= PAGE_TABLE_POOL_PAGES)
         {
-            DbgPrint("[-] Out of page table memory in pool.\n");
+            DbgPrintEx(0,0,"[-] Out of page table memory in pool.\n");
             return STATUS_INSUFFICIENT_RESOURCES;
         }
         Pt = (PTE_64*)((PUCHAR)PoolBase + (*NextFreePageIndex) * PAGE_SIZE);
@@ -134,13 +134,13 @@ PTE_64 GetPteForVa(
     PML4E_64*        Pml4     = (PML4E_64*)MmMapIoSpace(DtbPa, PAGE_SIZE, MmNonCached);
     if (!Pml4)
     {
-        DbgPrint("[-] Failed to map PML4 at PA 0x%llx\n", DtbPa.QuadPart);
+        DbgPrintEx(0,0,"[-] Failed to map PML4 at PA 0x%llx\n", DtbPa.QuadPart);
         PTE_64 FoundPte = {0};
         return FoundPte;
     }
     if (!Pml4[VirtAddr.Pml4Index].Present)
     {
-        DbgPrint("[-] PML4E not present for VA 0x%p\n", Va);
+        DbgPrintEx(0,0,"[-] PML4E not present for VA 0x%p\n", Va);
         MmUnmapIoSpace(Pml4, PAGE_SIZE);
         PTE_64 FoundPte = {0};
         return FoundPte;
@@ -149,14 +149,14 @@ PTE_64 GetPteForVa(
     PDPTE_64*        Pdpt   = (PDPTE_64*)MmMapIoSpace(PdptPa, PAGE_SIZE, MmNonCached);
     if (!Pdpt)
     {
-        DbgPrint("[-] Failed to map PDPT at PA 0x%llx\n", PdptPa.QuadPart);
+        DbgPrintEx(0,0,"[-] Failed to map PDPT at PA 0x%llx\n", PdptPa.QuadPart);
         MmUnmapIoSpace(Pml4, PAGE_SIZE);
         PTE_64 FoundPte = {0};
         return FoundPte;
     }
     if (!Pdpt[VirtAddr.PdptIndex].Present)
     {
-        DbgPrint("[-] PDPTE not present for VA 0x%p\n", Va);
+        DbgPrintEx(0,0,"[-] PDPTE not present for VA 0x%p\n", Va);
         MmUnmapIoSpace(Pdpt, PAGE_SIZE);
         MmUnmapIoSpace(Pml4, PAGE_SIZE);
         PTE_64 FoundPte = {0};
@@ -178,7 +178,7 @@ PTE_64 GetPteForVa(
     PDE_64*          Pd   = (PDE_64*)MmMapIoSpace(PdPa, PAGE_SIZE, MmNonCached);
     if (!Pd)
     {
-        DbgPrint("[-] Failed to map PD at PA 0x%llx\n", PdPa.QuadPart);
+        DbgPrintEx(0,0,"[-] Failed to map PD at PA 0x%llx\n", PdPa.QuadPart);
         MmUnmapIoSpace(Pdpt, PAGE_SIZE);
         MmUnmapIoSpace(Pml4, PAGE_SIZE);
         PTE_64 FoundPte = {0};
@@ -187,7 +187,7 @@ PTE_64 GetPteForVa(
 
     if (!Pd[VirtAddr.PdIndex].Present)
     {
-        DbgPrint("[-] PDE not present for VA 0x%p\n", Va);
+        DbgPrintEx(0,0,"[-] PDE not present for VA 0x%p\n", Va);
         MmUnmapIoSpace(Pd, PAGE_SIZE);
         MmUnmapIoSpace(Pdpt, PAGE_SIZE);
         MmUnmapIoSpace(Pml4, PAGE_SIZE);
@@ -212,7 +212,7 @@ PTE_64 GetPteForVa(
     PTE_64*          Pt   = (PTE_64*)MmMapIoSpace(PtPa, PAGE_SIZE, MmNonCached);
     if (!Pt)
     {
-        DbgPrint("[-] Failed to map PT at PA 0x%llx\n", PtPa.QuadPart);
+        DbgPrintEx(0,0,"[-] Failed to map PT at PA 0x%llx\n", PtPa.QuadPart);
         MmUnmapIoSpace(Pd, PAGE_SIZE);
         MmUnmapIoSpace(Pdpt, PAGE_SIZE);
         MmUnmapIoSpace(Pml4, PAGE_SIZE);
@@ -221,7 +221,7 @@ PTE_64 GetPteForVa(
     }
     if (!Pt[VirtAddr.PtIndex].Present)
     {
-        DbgPrint("[-] PTE not present for VA 0x%p\n", Va);
+        DbgPrintEx(0,0,"[-] PTE not present for VA 0x%p\n", Va);
         MmUnmapIoSpace(Pt, PAGE_SIZE);
         MmUnmapIoSpace(Pd, PAGE_SIZE);
         MmUnmapIoSpace(Pdpt, PAGE_SIZE);

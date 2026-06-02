@@ -19,10 +19,14 @@ CI_FREE_POLICY_INFO     G_CiFreePolicyInfo     = NULL;
 NTSTATUS ResolveCiFunctions(
     VOID)
 {
+    // Already resolved — second callers (InitializeInternals + InitializeNmiHandler) are both safe.
+    if (G_CiValidateFileObject && G_CiFreePolicyInfo)
+        return STATUS_SUCCESS;
+
     PVOID ciBase = FindModuleByName(L"ci.dll");
     if (!ciBase)
     {
-        DbgPrint("[-] Could not find ci.dll module base.\n");
+        DbgPrintEx(0,0,"[-] Could not find ci.dll module base.\n");
         return STATUS_NOT_FOUND;
     }
 
@@ -31,12 +35,12 @@ NTSTATUS ResolveCiFunctions(
 
     if (G_CiValidateFileObject && G_CiFreePolicyInfo)
     {
-        DbgPrint("[+] Resolved CiValidateFileObject at 0x%p\n", G_CiValidateFileObject);
-        DbgPrint("[+] Resolved CiFreePolicyInfo at 0x%p\n", G_CiFreePolicyInfo);
+        DbgPrintEx(0,0,"[+] Resolved CiValidateFileObject at 0x%p\n", G_CiValidateFileObject);
+        DbgPrintEx(0,0,"[+] Resolved CiFreePolicyInfo at 0x%p\n", G_CiFreePolicyInfo);
         return STATUS_SUCCESS;
     }
 
-    DbgPrint("[-] Could not resolve required CI functions from ci.dll.\n");
+    DbgPrintEx(0,0,"[-] Could not resolve required CI functions from ci.dll.\n");
     return STATUS_NOT_FOUND;
 }
 
@@ -49,7 +53,7 @@ NTSTATUS VerifyModuleSignatureByRip(
 {
     if (!G_CiValidateFileObject || !G_CiFreePolicyInfo)
     {
-        DbgPrint("[-] Code Integrity functions are not resolved. Cannot perform signature check.\n");
+        DbgPrintEx(0,0,"[-] Code Integrity functions are not resolved. Cannot perform signature check.\n");
         return STATUS_NOT_FOUND;
     }
 
@@ -57,7 +61,7 @@ NTSTATUS VerifyModuleSignatureByRip(
     ModuleBase       = RtlPcToFileHeader(Rip, &ModuleBase);
     if (!ModuleBase)
     {
-        DbgPrint("[-] RIP 0x%p is not inside any known module.\n", Rip);
+        DbgPrintEx(0,0,"[-] RIP 0x%p is not inside any known module.\n", Rip);
         return STATUS_NOT_FOUND;
     }
 
@@ -79,11 +83,11 @@ NTSTATUS VerifyModuleSignatureByRip(
 
     if (!FoundModule)
     {
-        DbgPrint("[-] Could not find module LDR entry for base 0x%p.\n", ModuleBase);
+        DbgPrintEx(0,0,"[-] Could not find module LDR entry for base 0x%p.\n", ModuleBase);
         return STATUS_NOT_FOUND;
     }
 
-    DbgPrint("[*] Checking signature for module: %wZ\n", &ModuleEntry->FullDllName);
+    DbgPrintEx(0,0,"[*] Checking signature for module: %wZ\n", &ModuleEntry->FullDllName);
 
     NTSTATUS          Status;
     HANDLE            FileHandle    = NULL;
@@ -106,7 +110,7 @@ NTSTATUS VerifyModuleSignatureByRip(
                               FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ, FILE_OPEN, FILE_SYNCHRONOUS_IO_NONALERT, NULL, 0);
         if (!NT_SUCCESS(Status) || !FileHandle)
         {
-            DbgPrint("[-] ZwCreateFile failed with status 0x%X for %wZ\n", Status, &ModuleEntry->FullDllName);
+            DbgPrintEx(0,0,"[-] ZwCreateFile failed with status 0x%X for %wZ\n", Status, &ModuleEntry->FullDllName);
             __leave;
         }
 
@@ -114,28 +118,29 @@ NTSTATUS VerifyModuleSignatureByRip(
                                            (PVOID*)&FileObject, NULL);
         if (!NT_SUCCESS(Status) || !FileObject)
         {
-            DbgPrint("[-] ObReferenceObjectByHandle failed with status 0x%X\n", Status);
+            DbgPrintEx(0,0,"[-] ObReferenceObjectByHandle failed with status 0x%X\n", Status);
             __leave;
         }
         LARGE_INTEGER SigningTime      = {0};
         INT           DigestIdentifier = 0;
-        INT           DigestSize       = 64; // Minimum size for SHA-512
+        INT           DigestSize       = 64;
+        UCHAR         DigestBuf[64]    = {0}; // must not be NULL — CI.dll writes DigestSize bytes unconditionally
 
-        Status = G_CiValidateFileObject(FileObject, 0, 0, &SignerPolicy, &TimestampPolicy, &SigningTime, NULL,
+        Status = G_CiValidateFileObject(FileObject, 0, 0, &SignerPolicy, &TimestampPolicy, &SigningTime, DigestBuf,
                                         &DigestSize,
                                         &DigestIdentifier);
         if (NT_SUCCESS(Status))
         {
-            DbgPrint("[+] Module %wZ is digitally signed and trusted.\n", &ModuleEntry->BaseDllName);
+            DbgPrintEx(0,0,"[+] Module %wZ is digitally signed and trusted.\n", &ModuleEntry->BaseDllName);
         }
         else
         {
-            DbgPrint("[-] Module %wZ is NOT signed or trusted. Status: 0x%X\n", &ModuleEntry->BaseDllName, Status);
+            DbgPrintEx(0,0,"[-] Module %wZ is NOT signed or trusted. Status: 0x%X\n", &ModuleEntry->BaseDllName, Status);
         }
     }
     __finally
     {
-        DbgPrint("[*] Cleaning up resources after signature check.\n");
+        DbgPrintEx(0,0,"[*] Cleaning up resources after signature check.\n");
         // This cleanup block is critical for stability.
         if (SignerPolicy.CertChainInfo) G_CiFreePolicyInfo(&SignerPolicy);
         if (TimestampPolicy.CertChainInfo) G_CiFreePolicyInfo(&TimestampPolicy);

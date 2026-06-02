@@ -15,6 +15,7 @@
  */
 
 #include "cr3_thrasher.h"
+#include "dse_check.h"
 #include "internals.h"
 #include "stackwalk.h"
 #include "wfp_monitor.h"
@@ -28,6 +29,7 @@
 #define IOCTL_TRIGGER_NMI_STACKWALK       CTL_CODE(FILE_DEVICE_UNKNOWN, 0x803, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_INITIALIZE_WFP_MONITOR      CTL_CODE(FILE_DEVICE_UNKNOWN, 0x804, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_DEINITIALIZE_WFP_MONITOR    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x805, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_DSE_CHECK           CTL_CODE(FILE_DEVICE_UNKNOWN, 0x806, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 
 // =================================================================================================
@@ -78,7 +80,7 @@ NTSTATUS DriverEntry(
     UNREFERENCED_PARAMETER(DriverObject);
     UNREFERENCED_PARAMETER(RegistryPath);
 
-    DbgPrint("[+] kdmapper has called DriverEntry\n");
+    DbgPrintEx(0,0,"[+] kdmapper has called DriverEntry\n");
 
     UNICODE_STRING DriverName;
     RtlInitUnicodeString(&DriverName, G_DRIVER_NAME);
@@ -89,11 +91,11 @@ NTSTATUS DriverEntry(
 
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] IoCreateDriver failed: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] IoCreateDriver failed: 0x%X\n", Status);
     }
     else
     {
-        DbgPrint("[+] IoCreateDriver succeeded\n");
+        DbgPrintEx(0,0,"[+] IoCreateDriver succeeded\n");
     }
 
     return Status;
@@ -115,7 +117,7 @@ NTSTATUS NTAPI DriverInitialize(
     RtlInitUnicodeString(&DeviceName, G_DEVICE_NAME);
     RtlInitUnicodeString(&SymbolicLinkName, G_SYMLINK_NAME);
 
-    DbgPrint("[+] DriverInitialize called by IoCreateDriver\n");
+    DbgPrintEx(0,0,"[+] DriverInitialize called by IoCreateDriver\n");
 
     // Create the device object.
     Status = IoCreateDevice(
@@ -130,23 +132,23 @@ NTSTATUS NTAPI DriverInitialize(
 
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] IoCreateDevice failed: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] IoCreateDevice failed: 0x%X\n", Status);
         return Status;
     }
 
-    DbgPrint("[+] Device object created successfully\n");
+    DbgPrintEx(0,0,"[+] Device object created successfully\n");
 
     // Create a symbolic link so user-mode applications can find the device.
     Status = IoCreateSymbolicLink(&SymbolicLinkName, &DeviceName);
 
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] IoCreateSymbolicLink failed: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] IoCreateSymbolicLink failed: 0x%X\n", Status);
         IoDeleteDevice(DeviceObject);
         return Status;
     }
 
-    DbgPrint("[+] Symbolic link created successfully\n");
+    DbgPrintEx(0,0,"[+] Symbolic link created successfully\n");
 
     // Set up the driver unload routine and IRP handlers.
     DriverObject->DriverUnload                         = DriverUnload;
@@ -160,7 +162,7 @@ NTSTATUS NTAPI DriverInitialize(
     // Initialize internal structures.
     InitializeInternals();
 
-    DbgPrint("[+] Driver initialized successfully. WFP monitor is ready to be activated via IOCTL.\n");
+    DbgPrintEx(0,0,"[+] Driver initialized successfully. WFP monitor is ready to be activated via IOCTL.\n");
     return Status;
 }
 
@@ -174,7 +176,7 @@ VOID DriverUnload(
 {
     UNICODE_STRING SymbolicLinkName = {0};
     RtlInitUnicodeString(&SymbolicLinkName, G_SYMLINK_NAME);
-    DbgPrint("[+] DriverUnload called\n");
+    DbgPrintEx(0,0,"[+] DriverUnload called\n");
 
     // Deinitialize the NMI handler if it was initialized.
     DeinitializeNmiHandler();
@@ -182,26 +184,26 @@ VOID DriverUnload(
     // Ensure WFP is cleaned up if it was left active. This is a critical cleanup step.
     if (G_IsWfpInitialized)
     {
-        DbgPrint("[*] WFP was active during unload. De-initializing now.\n");
+        DbgPrintEx(0,0,"[*] WFP was active during unload. De-initializing now.\n");
         DeinitializeWfpMonitor();
         G_IsWfpInitialized = FALSE;
     }
 
     // Delete the symbolic link.
     IoDeleteSymbolicLink(&SymbolicLinkName);
-    DbgPrint("[+] Symbolic link deleted\n");
+    DbgPrintEx(0,0,"[+] Symbolic link deleted\n");
 
     // Delete the device object.
     if (DriverObject->DeviceObject)
     {
         IoDeleteDevice(DriverObject->DeviceObject);
-        DbgPrint("[+] Device object deleted\n");
+        DbgPrintEx(0,0,"[+] Device object deleted\n");
     }
 
     // Delete the driver object itself.
     IoDeleteDriver(DriverObject);
 
-    DbgPrint("[+] Driver unloaded successfully\n");
+    DbgPrintEx(0,0,"[+] Driver unloaded successfully\n");
 }
 
 NTSTATUS IrpCreateCloseHandler(
@@ -210,7 +212,7 @@ NTSTATUS IrpCreateCloseHandler(
 )
 {
     UNREFERENCED_PARAMETER(DeviceObject);
-    DbgPrint("[+] IrpCreateCloseHandler called\n");
+    DbgPrintEx(0,0,"[+] IrpCreateCloseHandler called\n");
     Irp->IoStatus.Status      = STATUS_SUCCESS;
     Irp->IoStatus.Information = 0;
     IoCompleteRequest(Irp, IO_NO_INCREMENT);
@@ -235,24 +237,24 @@ NTSTATUS IrpDeviceIoCtlHandler(
         switch (IrpStack->Parameters.DeviceIoControl.IoControlCode)
         {
         case IOCTL_TEST_COMMUNICATION:
-            DbgPrint("[+] IOCTL_TEST_COMMUNICATION received\n");
+            DbgPrintEx(0,0,"[+] IOCTL_TEST_COMMUNICATION received\n");
             break;
 
         case IOCTL_TRIGGER_CR3_THRASH:
-            DbgPrint("[+] IOCTL_TRIGGER_CR3_THRASH received\n");
+            DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_CR3_THRASH received\n");
             TriggerCr3Thrash();
             break;
 
         case IOCTL_TRIGGER_NMI_STACKWALK:
-            DbgPrint("[+] IOCTL_TRIGGER_NMI_STACKWALK received\n");
+            DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_NMI_STACKWALK received\n");
             TriggerNmiStackwalk();
             break;
 
         case IOCTL_INITIALIZE_WFP_MONITOR:
-            DbgPrint("[+] IOCTL_INITIALIZE_WFP_MONITOR received\n");
+            DbgPrintEx(0,0,"[+] IOCTL_INITIALIZE_WFP_MONITOR received\n");
             if (G_IsWfpInitialized)
             {
-                DbgPrint("[*] WFP monitor is already initialized.\n");
+                DbgPrintEx(0,0,"[*] WFP monitor is already initialized.\n");
                 Status = STATUS_SUCCESS; // Or a custom status like STATUS_ALREADY_INITIALIZED
             }
             else
@@ -266,10 +268,10 @@ NTSTATUS IrpDeviceIoCtlHandler(
             break;
 
         case IOCTL_DEINITIALIZE_WFP_MONITOR:
-            DbgPrint("[+] IOCTL_DEINITIALIZE_WFP_MONITOR received\n");
+            DbgPrintEx(0,0,"[+] IOCTL_DEINITIALIZE_WFP_MONITOR received\n");
             if (!G_IsWfpInitialized)
             {
-                DbgPrint("[*] WFP monitor is not currently initialized.\n");
+                DbgPrintEx(0,0,"[*] WFP monitor is not currently initialized.\n");
             }
             else
             {
@@ -278,8 +280,13 @@ NTSTATUS IrpDeviceIoCtlHandler(
             }
             break;
 
+        case IOCTL_TRIGGER_DSE_CHECK:
+            DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_DSE_CHECK received\n");
+            Status = RunDseChecks();
+            break;
+
         case IOCTL_UNLOAD_DRIVER:
-            DbgPrint("[+] IOCTL_UNLOAD_DRIVER received\n");
+            DbgPrintEx(0,0,"[+] IOCTL_UNLOAD_DRIVER received\n");
             // CRITICAL: Complete the request back to user-mode BEFORE unloading.
             Irp->IoStatus.Status      = Status;
             Irp->IoStatus.Information = 0;

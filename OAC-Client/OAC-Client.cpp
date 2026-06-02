@@ -11,6 +11,7 @@
 #define IOCTL_TRIGGER_NMI_STACKWALK       CTL_CODE(FILE_DEVICE_UNKNOWN, 0x803, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_INITIALIZE_WFP_MONITOR      CTL_CODE(FILE_DEVICE_UNKNOWN, 0x804, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_DEINITIALIZE_WFP_MONITOR    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x805, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_DSE_CHECK           CTL_CODE(FILE_DEVICE_UNKNOWN, 0x806, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 // The symbolic link name for the driver.
 const wchar_t* G_SYMLINK_NAME = L"\\\\.\\OAC6";
@@ -108,6 +109,24 @@ void DeinitializeWfpMonitorRequest(HANDLE hDevice)
     }
 }
 
+void TriggerDseCheck(HANDLE hDevice)
+{
+    std::cout << "[!] Sending IOCTL to run DSE integrity checks." << std::endl;
+    DWORD bytesReturned = 0;
+    BOOL  success       = DeviceIoControl(
+        hDevice,
+        IOCTL_TRIGGER_DSE_CHECK,
+        nullptr, 0,
+        nullptr, 0,
+        &bytesReturned,
+        nullptr);
+
+    if (!success)
+        std::cerr << "[-] DeviceIoControl for DSE Check failed: " << GetLastError() << std::endl;
+    else
+        std::cout << "[+] DSE check complete. Review kernel debugger output for violations." << std::endl;
+}
+
 void SendUnloadRequest(HANDLE hDevice)
 {
     std::cout << "[!] Sending IOCTL to unload the driver." << std::endl;
@@ -170,6 +189,7 @@ int main()
         std::cout << "  3. Initialize WFP Network Monitor" << std::endl;
         std::cout << "  4. De-initialize WFP Network Monitor" << std::endl;
         std::cout << "  5. Unload Driver" << std::endl;
+        std::cout << "  6. Run DSE Integrity Checks" << std::endl;
         std::cout << "  0. Exit Client" << std::endl;
         std::cout << "------------------------------------------" << std::endl;
         std::cout << "Your choice: ";
@@ -197,6 +217,9 @@ int main()
             case 5:
                 SendUnloadRequest(hDevice);
                 running = false; // Exit loop after unload request
+                break;
+            case 6:
+                TriggerDseCheck(hDevice);
                 break;
             case 0:
                 running = false;

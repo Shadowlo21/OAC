@@ -91,7 +91,7 @@ VOID AnalyzeProcessPageTables(
         return;
     }
 
-    DbgPrint("[+] Analyzing page tables for process PID: %llu\n", (UINT64)PsGetProcessId(TargetProcess));
+    DbgPrintEx(0,0,"[+] Analyzing page tables for process PID: %llu\n", (UINT64)PsGetProcessId(TargetProcess));
     WalkPageTableHierarchy(TargetProcess, ProcessDtb);
 }
 
@@ -193,11 +193,11 @@ static VOID WalkPd(
 
                 if (IsUserAccessible && CurrentVa >= KERNEL_MODE_BOUNDARY)
                 {
-                    DbgPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                    DbgPrint("!!! KERNEL-MAPPING VIOLATION DETECTED in PID: %llu\n", (UINT64)PsGetProcessId(Process));
-                    DbgPrint("!!! User-mode is granted access to kernel address: 0x%llX\n", CurrentVa);
-                    DbgPrint("!!! PDE Content: 0x%llX\n", Pd[PdIndex].AsUInt);
-                    DbgPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                    DbgPrintEx(0,0,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                    DbgPrintEx(0,0,"!!! KERNEL-MAPPING VIOLATION DETECTED in PID: %llu\n", (UINT64)PsGetProcessId(Process));
+                    DbgPrintEx(0,0,"!!! User-mode is granted access to kernel address: 0x%llX\n", CurrentVa);
+                    DbgPrintEx(0,0,"!!! PDE Content: 0x%llX\n", Pd[PdIndex].AsUInt);
+                    DbgPrintEx(0,0,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
                 }
                 continue; // Skip large pages as they don't have a PT to walk.
             }
@@ -245,11 +245,11 @@ static VOID WalkPt(
             //
             if (IsUserAccessible && CurrentVa >= KERNEL_MODE_BOUNDARY)
             {
-                DbgPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                DbgPrint("!!! KERNEL-MAPPING VIOLATION DETECTED in PID: %llu\n", (UINT64)PsGetProcessId(Process));
-                DbgPrint("!!! User-mode is granted access to kernel address: 0x%llX\n", CurrentVa);
-                DbgPrint("!!! PTE Content: 0x%llX\n", Pt[PtIndex].AsUInt);
-                DbgPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                DbgPrintEx(0,0,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                DbgPrintEx(0,0,"!!! KERNEL-MAPPING VIOLATION DETECTED in PID: %llu\n", (UINT64)PsGetProcessId(Process));
+                DbgPrintEx(0,0,"!!! User-mode is granted access to kernel address: 0x%llX\n", CurrentVa);
+                DbgPrintEx(0,0,"!!! PTE Content: 0x%llX\n", Pt[PtIndex].AsUInt);
+                DbgPrintEx(0,0,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             }
         }
     }

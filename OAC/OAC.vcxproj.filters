@@ -1,141 +1,170 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <!-- Top-level VS filter groups -->
+    <Filter Include="core">
+      <UniqueIdentifier>{A1B2C3D4-0001-0001-0001-000000000001}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    <Filter Include="detections">
+      <UniqueIdentifier>{A1B2C3D4-0002-0002-0002-000000000002}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="util">
+      <UniqueIdentifier>{A1B2C3D4-0003-0003-0003-000000000003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="arch">
+      <UniqueIdentifier>{A1B2C3D4-0004-0004-0004-000000000004}</UniqueIdentifier>
+      <Extensions>asm</Extensions>
+    </Filter>
+    <Filter Include="ci">
+      <UniqueIdentifier>{A1B2C3D4-0005-0005-0005-000000000005}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor">
+      <UniqueIdentifier>{A1B2C3D4-0006-0006-0006-000000000006}</UniqueIdentifier>
     </Filter>
     <Filter Include="Driver Files">
       <UniqueIdentifier>{8E41214B-6785-4CFE-B992-037D68949A14}</UniqueIdentifier>
       <Extensions>inf;inv;inx;mof;mc;</Extensions>
     </Filter>
   </ItemGroup>
+
+  <!-- ======================== Source Files ======================== -->
   <ItemGroup>
-    <ClCompile Include="main.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="core\main.c">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="mm.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="core\internals.c">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="cr3_thrasher.c">
-      <Filter>Source Files</Filter>
+
+    <ClCompile Include="detections\dse_check.c">
+      <Filter>detections</Filter>
     </ClCompile>
-    <ClCompile Include="stackwalk.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="detections\cr3_thrasher.c">
+      <Filter>detections</Filter>
     </ClCompile>
-    <ClCompile Include="module.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="detections\cr3_validation.c">
+      <Filter>detections</Filter>
     </ClCompile>
-    <ClCompile Include="ci.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="detections\stackwalk.c">
+      <Filter>detections</Filter>
     </ClCompile>
-    <ClCompile Include="serial_logger.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="detections\wfp_monitor.c">
+      <Filter>detections</Filter>
     </ClCompile>
-    <ClCompile Include="instruction_decoder.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="detections\shellcode_analyzer.c">
+      <Filter>detections</Filter>
     </ClCompile>
-    <ClCompile Include="Zydis.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="detections\pt_analyzer.c">
+      <Filter>detections</Filter>
     </ClCompile>
-    <ClCompile Include="cr3_validation.c">
-      <Filter>Source Files</Filter>
+
+    <ClCompile Include="util\module.c">
+      <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="internals.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="util\mm.c">
+      <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="pt_analyzer.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="util\serial_logger.c">
+      <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="wfp_monitor.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="util\instruction_decoder.c">
+      <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="shellcode_analyzer.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="util\zyan_stackwalker.c">
+      <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="zyan_stackwalker.c">
-      <Filter>Source Files</Filter>
+
+    <ClCompile Include="ci\ci.c">
+      <Filter>ci</Filter>
+    </ClCompile>
+
+    <ClCompile Include="vendor\Zydis.c">
+      <Filter>vendor</Filter>
     </ClCompile>
   </ItemGroup>
+
+  <!-- ======================== Header Files ======================== -->
   <ItemGroup>
-    <ClInclude Include="internals.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="core\globals.h">
+      <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="ia32.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="core\internals.h">
+      <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="cr3_thrasher.h">
-      <Filter>Header Files</Filter>
+
+    <ClInclude Include="detections\dse_check.h">
+      <Filter>detections</Filter>
     </ClInclude>
-    <ClInclude Include="arch.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="detections\cr3_thrasher.h">
+      <Filter>detections</Filter>
     </ClInclude>
-    <ClInclude Include="mm.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="detections\cr3_validation.h">
+      <Filter>detections</Filter>
     </ClInclude>
-    <ClInclude Include="isr.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="detections\stackwalk.h">
+      <Filter>detections</Filter>
     </ClInclude>
-    <ClInclude Include="stackwalk.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="detections\wfp_monitor.h">
+      <Filter>detections</Filter>
     </ClInclude>
-    <ClInclude Include="module.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="detections\shellcode_analyzer.h">
+      <Filter>detections</Filter>
     </ClInclude>
-    <ClInclude Include="ci.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="detections\pt_analyzer.h">
+      <Filter>detections</Filter>
     </ClInclude>
-    <ClInclude Include="globals.h">
-      <Filter>Header Files</Filter>
+
+    <ClInclude Include="util\module.h">
+      <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="stackwalk_saferecovery.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="util\mm.h">
+      <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="serial_logger.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="util\pattern_scanner.h">
+      <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="instruction_decoder.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="util\serial_logger.h">
+      <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="Zydis.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="util\instruction_decoder.h">
+      <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="cr3_validation.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="util\zyan_stackwalker.h">
+      <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="pt_analyzer.h">
-      <Filter>Header Files</Filter>
+
+    <ClInclude Include="arch\arch.h">
+      <Filter>arch</Filter>
     </ClInclude>
-    <ClInclude Include="wfp_monitor.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="arch\ia32.h">
+      <Filter>arch</Filter>
     </ClInclude>
-    <ClInclude Include="shellcode_analyzer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="arch\isr.h">
+      <Filter>arch</Filter>
     </ClInclude>
-    <ClInclude Include="pattern_scanner.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="arch\stackwalk_saferecovery.h">
+      <Filter>arch</Filter>
     </ClInclude>
-    <ClInclude Include="zyan_stackwalker.h">
-      <Filter>Header Files</Filter>
+
+    <ClInclude Include="ci\ci.h">
+      <Filter>ci</Filter>
+    </ClInclude>
+
+    <ClInclude Include="vendor\Zydis.h">
+      <Filter>vendor</Filter>
     </ClInclude>
   </ItemGroup>
+
+  <!-- ======================== ASM Files ======================== -->
   <ItemGroup>
-    <MASM Include="isr.asm">
-      <Filter>Source Files</Filter>
+    <MASM Include="arch\arch.asm">
+      <Filter>arch</Filter>
     </MASM>
-    <MASM Include="arch.asm">
-      <Filter>Source Files</Filter>
+    <MASM Include="arch\isr.asm">
+      <Filter>arch</Filter>
     </MASM>
-    <MASM Include="stackwalk_saferecovery.asm">
-      <Filter>Source Files</Filter>
+    <MASM Include="arch\stackwalk_saferecovery.asm">
+      <Filter>arch</Filter>
     </MASM>
   </ItemGroup>
 </Project>

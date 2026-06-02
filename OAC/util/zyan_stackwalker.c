@@ -25,7 +25,7 @@ static BOOLEAN SafeReadMemory(
     _In_ SIZE_T Size
 )
 {
-    DbgPrint("[*] SafeReadMemory: Source=%p, Destination=%p, Size=%llu\n", Source, Destination, Size);
+    DbgPrintEx(0,0,"[*] SafeReadMemory: Source=%p, Destination=%p, Size=%llu\n", Source, Destination, Size);
     if (Size == 0) return TRUE;
 
     // Align to page boundaries and check every page in the range
@@ -235,7 +235,7 @@ BOOLEAN StackWalkWithZydis(
     ZydisDecoder Decoder;
     ZydisDecoderInit(&Decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64);
 
-    DbgPrint("Stack trace (heuristic):\n");
+    DbgPrintEx(0,0,"Stack trace (heuristic):\n");
 
     // Validate initial RIP
     if (IsUserModeAddress(InitialRip) &&
@@ -246,7 +246,7 @@ BOOLEAN StackWalkWithZydis(
     }
     else
     {
-        DbgPrint("Invalid initial RIP: %p\n", (PVOID)InitialRip);
+        DbgPrintEx(0,0,"Invalid initial RIP: %p\n", (PVOID)InitialRip);
         return FALSE;
     }
 
@@ -301,7 +301,7 @@ BOOLEAN StackWalkWithZydis(
         }
 
         // All heuristics passed; accept as frame
-        DbgPrint("Frame %llu: %p\n", FrameCount, (PVOID)Candidate);
+        DbgPrintEx(0,0,"Frame %llu: %p\n", FrameCount, (PVOID)Candidate);
         OutFrames[FrameCount] = Candidate;
         FrameCount++;
         ConsecutiveFailures = 0;

@@ -115,9 +115,9 @@ BOOLEAN NmiCallback(
     PROCESSOR_NUMBER CurrentProcNum = {0};
     KeGetCurrentProcessorNumberEx(&CurrentProcNum);
 
-    DbgPrint("===============================================================================\n");
-    DbgPrint(" NMI STACK TRACE FOR CPU %u (Group: %u)\n", CurrentProcNum.Number, CurrentProcNum.Group);
-    DbgPrint("===============================================================================\n");
+    DbgPrintEx(0,0,"===============================================================================\n");
+    DbgPrintEx(0,0," NMI STACK TRACE FOR CPU %u (Group: %u)\n", CurrentProcNum.Number, CurrentProcNum.Group);
+    DbgPrintEx(0,0,"===============================================================================\n");
 
     //
     // --- Unwind-Data-Based Stack Walk Logic ---
@@ -125,16 +125,16 @@ BOOLEAN NmiCallback(
     PKTRAP_FRAME TrapFrame = FindNmiTrapFrame();
     if (!TrapFrame)
     {
-        DbgPrint("[-] Failed to locate KTRAP_FRAME on NMI stack.\n");
+        DbgPrintEx(0,0,"[-] Failed to locate KTRAP_FRAME on NMI stack.\n");
         // Release the lock before returning.
         KeReleaseSpinLockFromDpcLevel(&NmiContext->Lock);
         return TRUE; // We handled our NMI, but failed the walk.
     }
 
-    DbgPrint("[+] Found KTRAP_FRAME at 0x%p\n", TrapFrame);
-    DbgPrint("    RIP: 0x%llX\n", TrapFrame->Rip);
-    DbgPrint("    RSP: 0x%llX\n", TrapFrame->Rsp);
-    DbgPrint("    RBP: 0x%llX\n", TrapFrame->Rbp);
+    DbgPrintEx(0,0,"[+] Found KTRAP_FRAME at 0x%p\n", TrapFrame);
+    DbgPrintEx(0,0,"    RIP: 0x%llX\n", TrapFrame->Rip);
+    DbgPrintEx(0,0,"    RSP: 0x%llX\n", TrapFrame->Rsp);
+    DbgPrintEx(0,0,"    RBP: 0x%llX\n", TrapFrame->Rbp);
 
     // Step 1. Initialize a CONTEXT record from the KTRAP_FRAME.
     // This CONTEXT record is the starting point for our unwind operation.
@@ -164,30 +164,30 @@ BOOLEAN NmiCallback(
     ContextRecord.SegSs  = TrapFrame->SegSs;
 
     // Print the initial frame (the interrupted context).
-    DbgPrint("[+] --- Trap Frame Info:\n");
-    DbgPrint("  RAX -> 0x%llX\n", ContextRecord.Rax);
-    DbgPrint("  RCX -> 0x%llX\n", ContextRecord.Rcx);
-    DbgPrint("  RDX -> 0x%llX\n", ContextRecord.Rdx);
-    DbgPrint("  RBX -> 0x%llX\n", ContextRecord.Rbx);
-    DbgPrint("  RSP -> 0x%llX\n", ContextRecord.Rsp);
-    DbgPrint("  RBP -> 0x%llX\n", ContextRecord.Rbp);
-    DbgPrint("  RSI -> 0x%llX\n", ContextRecord.Rsi);
-    DbgPrint("  RDI -> 0x%llX\n", ContextRecord.Rdi);
-    DbgPrint("  R8  -> 0x%llX\n", ContextRecord.R8);
-    DbgPrint("  R9  -> 0x%llX\n", ContextRecord.R9);
-    DbgPrint("  R10 -> 0x%llX\n", ContextRecord.R10);
-    DbgPrint("  R11 -> 0x%llX\n", ContextRecord.R11);
-    DbgPrint("  RIP -> 0x%llX\n", ContextRecord.Rip);
-    DbgPrint("  EFL -> 0x%lX\n", ContextRecord.EFlags);
-    DbgPrint("  CS  -> 0x%X\n", ContextRecord.SegCs);
-    DbgPrint("  DS  -> 0x%X\n", ContextRecord.SegDs);
-    DbgPrint("  ES  -> 0x%X\n", ContextRecord.SegEs);
-    DbgPrint("  FS  -> 0x%X\n", ContextRecord.SegFs);
-    DbgPrint("  GS  -> 0x%X\n", ContextRecord.SegGs);
-    DbgPrint("  SS  -> 0x%X\n", ContextRecord.SegSs);
+    DbgPrintEx(0,0,"[+] --- Trap Frame Info:\n");
+    DbgPrintEx(0,0,"  RAX -> 0x%llX\n", ContextRecord.Rax);
+    DbgPrintEx(0,0,"  RCX -> 0x%llX\n", ContextRecord.Rcx);
+    DbgPrintEx(0,0,"  RDX -> 0x%llX\n", ContextRecord.Rdx);
+    DbgPrintEx(0,0,"  RBX -> 0x%llX\n", ContextRecord.Rbx);
+    DbgPrintEx(0,0,"  RSP -> 0x%llX\n", ContextRecord.Rsp);
+    DbgPrintEx(0,0,"  RBP -> 0x%llX\n", ContextRecord.Rbp);
+    DbgPrintEx(0,0,"  RSI -> 0x%llX\n", ContextRecord.Rsi);
+    DbgPrintEx(0,0,"  RDI -> 0x%llX\n", ContextRecord.Rdi);
+    DbgPrintEx(0,0,"  R8  -> 0x%llX\n", ContextRecord.R8);
+    DbgPrintEx(0,0,"  R9  -> 0x%llX\n", ContextRecord.R9);
+    DbgPrintEx(0,0,"  R10 -> 0x%llX\n", ContextRecord.R10);
+    DbgPrintEx(0,0,"  R11 -> 0x%llX\n", ContextRecord.R11);
+    DbgPrintEx(0,0,"  RIP -> 0x%llX\n", ContextRecord.Rip);
+    DbgPrintEx(0,0,"  EFL -> 0x%lX\n", ContextRecord.EFlags);
+    DbgPrintEx(0,0,"  CS  -> 0x%X\n", ContextRecord.SegCs);
+    DbgPrintEx(0,0,"  DS  -> 0x%X\n", ContextRecord.SegDs);
+    DbgPrintEx(0,0,"  ES  -> 0x%X\n", ContextRecord.SegEs);
+    DbgPrintEx(0,0,"  FS  -> 0x%X\n", ContextRecord.SegFs);
+    DbgPrintEx(0,0,"  GS  -> 0x%X\n", ContextRecord.SegGs);
+    DbgPrintEx(0,0,"  SS  -> 0x%X\n", ContextRecord.SegSs);
 
-    DbgPrint("[+] --- Begin Unwind-Data Stack Walk ---\n");
-    DbgPrint("  [00] 0x%p (Interrupted RIP)\n", (PVOID)ContextRecord.Rip);
+    DbgPrintEx(0,0,"[+] --- Begin Unwind-Data Stack Walk ---\n");
+    DbgPrintEx(0,0,"  [00] 0x%p (Interrupted RIP)\n", (PVOID)ContextRecord.Rip);
 
     ULONG64 RetrievedRipArray[MAX_STACK_FRAMES] = {0};
     RetrievedRipArray[0]                        = ContextRecord.Rip;
@@ -225,7 +225,7 @@ BOOLEAN NmiCallback(
 
         if (!NT_SUCCESS(Status))
         {
-            DbgPrint("[-] RtlVirtualUnwind failed with status 0x%X\n", Status);
+            DbgPrintEx(0,0,"[-] RtlVirtualUnwind failed with status 0x%X\n", Status);
             break;
         }
 
@@ -235,14 +235,14 @@ BOOLEAN NmiCallback(
             break;
         }
 
-        DbgPrint("  [%02d] 0x%p\n", i, (PVOID)ContextRecord.Rip);
+        DbgPrintEx(0,0,"  [%02d] 0x%p\n", i, (PVOID)ContextRecord.Rip);
         RetrievedRipArray[i] = ContextRecord.Rip;
     }
 
-    DbgPrint("[+] --- End Unwind-Data Stack Walk ---\n");
+    DbgPrintEx(0,0,"[+] --- End Unwind-Data Stack Walk ---\n");
 
     // Add a newline for clarity.
-    DbgPrint("\n");
+    DbgPrintEx(0,0,"\n");
 
     // Release the spinlock.
     KeReleaseSpinLockFromDpcLevel(&NmiContext->Lock);
@@ -265,7 +265,7 @@ BOOLEAN NmiCallback(
         }
         else
         {
-            DbgPrint("[-] Signature check pool exhausted, dropping signature verification for this NMI.\n");
+            DbgPrintEx(0,0,"[-] Signature check pool exhausted, dropping signature verification for this NMI.\n");
             break;
         }
     }
@@ -335,7 +335,7 @@ NTSTATUS NTAPI PerformUnwindInSafeRegion(
     }
     else
     {
-        DbgPrint("[+] RtlVirtualUnwind completed without faults.\n");
+        DbgPrintEx(0,0,"[+] RtlVirtualUnwind completed without faults.\n");
     }
     // *** END DANGER ZONE ***
     _disable();            // Disable interrupts to safely restore the original IDT
@@ -386,7 +386,7 @@ static VOID SignatureCheckWorkerRoutine(
 
     // --- Perform comprehensive scans when the worker starts ---
     // This is an ideal place for periodic, system-wide checks.
-    DbgPrint("[+] Worker thread starting periodic system analysis.\n");
+    DbgPrintEx(0,0,"[+] Worker thread starting periodic system analysis.\n");
     if (PsActiveProcessHead)
     {
         PLIST_ENTRY ListEntry = PsActiveProcessHead->Flink;
@@ -400,7 +400,7 @@ static VOID SignatureCheckWorkerRoutine(
             ListEntry = ListEntry->Flink;
         }
     }
-    DbgPrint("[+] Periodic system analysis complete.\n");
+    DbgPrintEx(0,0,"[+] Periodic system analysis complete.\n");
 
     // --- Process items captured from NMIs ---
     for (;;)
@@ -440,11 +440,11 @@ static VOID SignatureCheckWorkerRoutine(
             // Perform the CR3 validation at PASSIVE_LEVEL.
             if (!IsCr3InProcessList(CheckItem->CapturedCr3))
             {
-                DbgPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                DbgPrint("!!! SUSPICIOUS CR3 DETECTED: 0x%llX\n", CheckItem->CapturedCr3);
-                DbgPrint("!!! This CR3 does not belong to any active process.\n");
-                DbgPrint("!!! Associated RIP: 0x%p\n", CheckItem->Rip);
-                DbgPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                DbgPrintEx(0,0,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                DbgPrintEx(0,0,"!!! SUSPICIOUS CR3 DETECTED: 0x%llX\n", CheckItem->CapturedCr3);
+                DbgPrintEx(0,0,"!!! This CR3 does not belong to any active process.\n");
+                DbgPrintEx(0,0,"!!! Associated RIP: 0x%p\n", CheckItem->Rip);
+                DbgPrintEx(0,0,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             }
 
             // Perform the signature verification.
@@ -470,7 +470,7 @@ NTSTATUS InitializeNmiHandler(VOID)
     NTSTATUS Status = ResolveCiFunctions();
     if (!NT_SUCCESS(Status))
     {
-        DbgPrint("[-] Failed to resolve CI functions: 0x%X\n", Status);
+        DbgPrintEx(0,0,"[-] Failed to resolve CI functions: 0x%X\n", Status);
         return Status;
     }
 
@@ -486,11 +486,11 @@ NTSTATUS InitializeNmiHandler(VOID)
     if (PsInitialSystemProcess != NULL)
     {
         G_NmiContext.SystemCr3 = PsInitialSystemProcess->Pcb.DirectoryTableBase;
-        DbgPrint("[+] Stored System CR3: 0x%llX\n", G_NmiContext.SystemCr3);
+        DbgPrintEx(0,0,"[+] Stored System CR3: 0x%llX\n", G_NmiContext.SystemCr3);
     }
     else
     {
-        DbgPrint("[-] PsInitialSystemProcess is NULL. Cannot get System CR3.\n");
+        DbgPrintEx(0,0,"[-] PsInitialSystemProcess is NULL. Cannot get System CR3.\n");
         // Continue without the check, but it will be ineffective.
         G_NmiContext.SystemCr3 = 0;
     }
@@ -524,11 +524,11 @@ NTSTATUS InitializeNmiHandler(VOID)
     G_NmiCallbackHandle = KeRegisterNmiCallback(NmiCallback, &G_NmiContext);
     if (!G_NmiCallbackHandle)
     {
-        DbgPrint("[-] Failed to register NMI callback.\n");
+        DbgPrintEx(0,0,"[-] Failed to register NMI callback.\n");
         return STATUS_INSUFFICIENT_RESOURCES;
     }
 
-    DbgPrint("[+] NMI callback and deferred checker registered successfully.\n");
+    DbgPrintEx(0,0,"[+] NMI callback and deferred checker registered successfully.\n");
     return STATUS_SUCCESS;
 }
 
@@ -541,7 +541,7 @@ VOID DeinitializeNmiHandler(VOID)
     {
         KeDeregisterNmiCallback(G_NmiCallbackHandle);
         G_NmiCallbackHandle = NULL;
-        DbgPrint("[+] NMI callback deregistered.\n");
+        DbgPrintEx(0,0,"[+] NMI callback deregistered.\n");
     }
 }
 
@@ -558,7 +558,7 @@ PKTRAP_FRAME FindNmiTrapFrame(VOID)
     __sidt(&Idtr);
     if (Idtr.Limit == 0 || Idtr.BaseAddress == 0)
     {
-        DbgPrint("[-] Invalid IDT.\n");
+        DbgPrintEx(0,0,"[-] Invalid IDT.\n");
         return NULL;
     }
 
@@ -570,7 +570,7 @@ PKTRAP_FRAME FindNmiTrapFrame(VOID)
     UINT32 IstIndex = NmiDescriptor->InterruptStackTable;
     if (IstIndex == 0 || IstIndex > 7)
     {
-        DbgPrint("[-] Invalid IST index in NMI descriptor: %u\n", IstIndex);
+        DbgPrintEx(0,0,"[-] Invalid IST index in NMI descriptor: %u\n", IstIndex);
         return NULL;
     }
 
@@ -582,7 +582,7 @@ PKTRAP_FRAME FindNmiTrapFrame(VOID)
 
     if (Gdtr.Limit == 0 || Gdtr.BaseAddress == 0 || TssSelector.Index == 0)
     {
-        DbgPrint("[-] Invalid GDT or TSS selector.\n");
+        DbgPrintEx(0,0,"[-] Invalid GDT or TSS selector.\n");
         return NULL;
     }
 
@@ -603,7 +603,7 @@ PKTRAP_FRAME FindNmiTrapFrame(VOID)
     UINT64 IstStackTop = *(&Tss->Ist1 + (IstIndex - 1));
     if (!IstStackTop)
     {
-        DbgPrint("[-] Failed to find a valid IST stack top for NMI.\n");
+        DbgPrintEx(0,0,"[-] Failed to find a valid IST stack top for NMI.\n");
         return NULL;
     }
 
@@ -632,7 +632,7 @@ VOID TriggerNmiStackwalk(VOID)
     NTSTATUS InitializationStatus = InitializeNmiHandler();
     if (!NT_SUCCESS(InitializationStatus))
     {
-        DbgPrint("[-] Failed to initialize NMI handler: 0x%X\n", InitializationStatus);
+        DbgPrintEx(0,0,"[-] Failed to initialize NMI handler: 0x%X\n", InitializationStatus);
         return;
     }
 
@@ -644,12 +644,12 @@ VOID TriggerNmiStackwalk(VOID)
     // Step 3: Get the total number of active processors across all processor groups.
     ULONG TotalProcs = KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 
-    DbgPrint("[+] Request received on CPU %d (Group %d). Broadcasting NMIs to %d other processors...\n",
+    DbgPrintEx(0,0,"[+] Request received on CPU %d (Group %d). Broadcasting NMIs to %d other processors...\n",
              CurrentProcNum.Number, CurrentProcNum.Group, TotalProcs - 1);
 
     if (TotalProcs <= 1)
     {
-        DbgPrint("[-] Only one processor detected. Cannot broadcast NMI.\n");
+        DbgPrintEx(0,0,"[-] Only one processor detected. Cannot broadcast NMI.\n");
         return;
     }
 
@@ -668,7 +668,7 @@ VOID TriggerNmiStackwalk(VOID)
 
             if (!NT_SUCCESS(Status))
             {
-                DbgPrint("[-] Failed to get processor number for index %d: 0x%X\n", ProcessorIndex, Status);
+                DbgPrintEx(0,0,"[-] Failed to get processor number for index %d: 0x%X\n", ProcessorIndex, Status);
                 continue;
             }
 
@@ -692,7 +692,7 @@ VOID TriggerNmiStackwalk(VOID)
             HalSendNMI(&Affinity);
         }
 
-        DbgPrint("[*] Broadcasting NMI attempt %d...\n", NmiBroadcastCount + 1);
+        DbgPrintEx(0,0,"[*] Broadcasting NMI attempt %d...\n", NmiBroadcastCount + 1);
 
         // Wait a short moment to allow NMIs to be processed.
         LARGE_INTEGER WaitInterval = {0};
@@ -700,7 +700,7 @@ VOID TriggerNmiStackwalk(VOID)
         KeDelayExecutionThread(KernelMode, FALSE, &WaitInterval);
     }
 
-    DbgPrint("[+] NMIs sent.\n");
+    DbgPrintEx(0,0,"[+] NMIs sent.\n");
 
     // Step 7: Wait for all NMIs to be handled. Wait up to 5 seconds.
     LARGE_INTEGER Timeout      = {0};
@@ -716,14 +716,14 @@ VOID TriggerNmiStackwalk(VOID)
     // Step 8: Check if there was an NMI blocking issue.
     if (G_NmiContext.PendingCount != 0)
     {
-        DbgPrint("[-] Warning: Some NMIs were not handled within the timeout period. Pending count: %ld\n",
+        DbgPrintEx(0,0,"[-] Warning: Some NMIs were not handled within the timeout period. Pending count: %ld\n",
                  G_NmiContext.PendingCount);
         // Reset the pending count to avoid stale state.
         G_NmiContext.PendingCount = 0;
     }
     else
     {
-        DbgPrint("[+] All NMIs handled successfully.\n");
+        DbgPrintEx(0,0,"[+] All NMIs handled successfully.\n");
     }
 
 

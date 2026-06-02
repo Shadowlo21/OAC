@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -67,100 +67,183 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
+
+  <!-- Output directories -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <OutDir>C:\OAntiCheat\build\driver\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <OutDir>C:\OAntiCheat\build\driver\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <OutDir>C:\OAntiCheat\build\driver\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <OutDir>C:\OAntiCheat\build\driver\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
+
+  <!-- Build settings -->
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
+      <SignMode>Off</SignMode>
     </DriverSign>
     <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)detections;$(ProjectDir)util;$(ProjectDir)arch;$(ProjectDir)ci;$(ProjectDir)vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-    </ClCompile>
-    <ClCompile>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <PreprocessorDefinitions>ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link />
+    <Link>
+      <AdditionalDependencies>Fwpkclnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
     </DriverSign>
     <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)detections;$(ProjectDir)util;$(ProjectDir)arch;$(ProjectDir)ci;$(ProjectDir)vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PreprocessorDefinitions>ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link />
     <Link>
       <AdditionalDependencies>Fwpkclnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <DriverSign>
+      <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
+      <SignMode>Off</SignMode>
+    </DriverSign>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)detections;$(ProjectDir)util;$(ProjectDir)arch;$(ProjectDir)ci;$(ProjectDir)vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <PreprocessorDefinitions>ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Fwpkclnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <DriverSign>
+      <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
+    </DriverSign>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)detections;$(ProjectDir)util;$(ProjectDir)arch;$(ProjectDir)ci;$(ProjectDir)vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <PreprocessorDefinitions>ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Fwpkclnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
+
+  <!-- ======================== Source Files ======================== -->
   <ItemGroup>
-    <ClCompile Include="ci.c" />
-    <ClCompile Include="cr3_thrasher.c" />
-    <ClCompile Include="cr3_validation.c" />
-    <ClCompile Include="instruction_decoder.c">
-      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</TreatWarningAsError>
+    <!-- core -->
+    <ClCompile Include="core\main.c" />
+    <ClCompile Include="core\internals.c" />
+
+    <!-- detections -->
+    <ClCompile Include="detections\dse_check.c" />
+    <ClCompile Include="detections\cr3_thrasher.c" />
+    <ClCompile Include="detections\cr3_validation.c" />
+    <ClCompile Include="detections\stackwalk.c">
+      <!-- ExQueueWorkItem/ExInitializeWorkItem are deprecated but functional; suppress C4996 -->
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
-    <ClCompile Include="internals.c" />
-    <ClCompile Include="main.c" />
-    <ClCompile Include="mm.c" />
-    <ClCompile Include="module.c" />
-    <ClCompile Include="pt_analyzer.c" />
-    <ClCompile Include="serial_logger.c" />
-    <ClCompile Include="shellcode_analyzer.c" />
-    <ClCompile Include="stackwalk.c" />
-    <ClCompile Include="wfp_monitor.c" />
-    <ClCompile Include="zyan_stackwalker.c" />
-    <ClCompile Include="Zydis.c">
-      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</TreatWarningAsError>
+    <ClCompile Include="detections\wfp_monitor.c" />
+    <ClCompile Include="detections\shellcode_analyzer.c" />
+    <ClCompile Include="detections\pt_analyzer.c" />
+
+    <!-- util -->
+    <ClCompile Include="util\module.c" />
+    <ClCompile Include="util\mm.c" />
+    <ClCompile Include="util\serial_logger.c" />
+    <ClCompile Include="util\instruction_decoder.c">
+      <TreatWarningAsError>false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="util\zyan_stackwalker.c" />
+
+    <!-- ci -->
+    <ClCompile Include="ci\ci.c" />
+
+    <!-- vendor -->
+    <ClCompile Include="vendor\Zydis.c">
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
   </ItemGroup>
+
+  <!-- ======================== Header Files ======================== -->
   <ItemGroup>
-    <ClInclude Include="arch.h" />
-    <ClInclude Include="ci.h" />
-    <ClInclude Include="cr3_thrasher.h" />
-    <ClInclude Include="cr3_validation.h" />
-    <ClInclude Include="globals.h" />
-    <ClInclude Include="ia32.h" />
-    <ClInclude Include="instruction_decoder.h" />
-    <ClInclude Include="internals.h" />
-    <ClInclude Include="isr.h" />
-    <ClInclude Include="mm.h" />
-    <ClInclude Include="module.h" />
-    <ClInclude Include="pattern_scanner.h" />
-    <ClInclude Include="pt_analyzer.h" />
-    <ClInclude Include="serial_logger.h" />
-    <ClInclude Include="shellcode_analyzer.h" />
-    <ClInclude Include="stackwalk.h" />
-    <ClInclude Include="stackwalk_saferecovery.h" />
-    <ClInclude Include="wfp_monitor.h" />
-    <ClInclude Include="zyan_stackwalker.h" />
-    <ClInclude Include="Zydis.h" />
+    <!-- core -->
+    <ClInclude Include="core\globals.h" />
+    <ClInclude Include="core\internals.h" />
+
+    <!-- detections -->
+    <ClInclude Include="detections\dse_check.h" />
+    <ClInclude Include="detections\cr3_thrasher.h" />
+    <ClInclude Include="detections\cr3_validation.h" />
+    <ClInclude Include="detections\stackwalk.h" />
+    <ClInclude Include="detections\wfp_monitor.h" />
+    <ClInclude Include="detections\shellcode_analyzer.h" />
+    <ClInclude Include="detections\pt_analyzer.h" />
+
+    <!-- util -->
+    <ClInclude Include="util\module.h" />
+    <ClInclude Include="util\mm.h" />
+    <ClInclude Include="util\pattern_scanner.h" />
+    <ClInclude Include="util\serial_logger.h" />
+    <ClInclude Include="util\instruction_decoder.h" />
+    <ClInclude Include="util\zyan_stackwalker.h" />
+
+    <!-- arch -->
+    <ClInclude Include="arch\arch.h" />
+    <ClInclude Include="arch\ia32.h" />
+    <ClInclude Include="arch\isr.h" />
+    <ClInclude Include="arch\stackwalk_saferecovery.h" />
+
+    <!-- ci -->
+    <ClInclude Include="ci\ci.h" />
+
+    <!-- vendor -->
+    <ClInclude Include="vendor\Zydis.h" />
   </ItemGroup>
+
+  <!-- ======================== ASM Files ======================== -->
   <ItemGroup>
-    <MASM Include="arch.asm" />
-    <MASM Include="isr.asm">
+    <MASM Include="arch\arch.asm" />
+    <MASM Include="arch\isr.asm">
       <FileType>Document</FileType>
     </MASM>
-    <MASM Include="stackwalk_saferecovery.asm" />
+    <MASM Include="arch\stackwalk_saferecovery.asm" />
   </ItemGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
+
+  <!-- Override WDK TestSign target for Debug — no cert needed, loaded via kdmapper -->
+  <Target Name="TestSign" Condition="'$(Configuration)'=='Debug'">
+    <Message Text="[OAC] TestSign skipped for Debug build (no test cert required — kdmapper load)." Importance="High" />
+  </Target>
+
 </Project>
