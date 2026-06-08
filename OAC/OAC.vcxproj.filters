@@ -35,6 +35,9 @@
     <ClCompile Include="core\internals.c">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="core\offsets.c">
+      <Filter>core</Filter>
+    </ClCompile>
 
     <ClCompile Include="detections\dse_check.c">
       <Filter>detections</Filter>
@@ -57,10 +60,22 @@
     <ClCompile Include="detections\pt_analyzer.c">
       <Filter>detections</Filter>
     </ClCompile>
-    <ClCompile Include="detections\import_scan.c">
+    <ClCompile Include="detections\suspicious_import.c">
+      <Filter>detections</Filter>
+    </ClCompile>
+    <ClCompile Include="detections\hv_checks.c">
+      <Filter>detections</Filter>
+    </ClCompile>
+    <ClCompile Include="detections\overlay_scan.c">
+      <Filter>detections</Filter>
+    </ClCompile>
+    <ClCompile Include="detections\text_integrity.c">
       <Filter>detections</Filter>
     </ClCompile>
 
+    <ClCompile Include="util\helpers.c">
+      <Filter>util</Filter>
+    </ClCompile>
     <ClCompile Include="util\module.c">
       <Filter>util</Filter>
     </ClCompile>
@@ -94,6 +109,9 @@
     <ClInclude Include="core\internals.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="core\offsets.h">
+      <Filter>core</Filter>
+    </ClInclude>
 
     <ClInclude Include="detections\dse_check.h">
       <Filter>detections</Filter>
@@ -116,10 +134,22 @@
     <ClInclude Include="detections\pt_analyzer.h">
       <Filter>detections</Filter>
     </ClInclude>
-    <ClInclude Include="detections\import_scan.h">
+    <ClInclude Include="detections\suspicious_import.h">
+      <Filter>detections</Filter>
+    </ClInclude>
+    <ClInclude Include="detections\hv_checks.h">
+      <Filter>detections</Filter>
+    </ClInclude>
+    <ClInclude Include="detections\overlay_scan.h">
+      <Filter>detections</Filter>
+    </ClInclude>
+    <ClInclude Include="detections\text_integrity.h">
       <Filter>detections</Filter>
     </ClInclude>
 
+    <ClInclude Include="util\helpers.h">
+      <Filter>util</Filter>
+    </ClInclude>
     <ClInclude Include="util\module.h">
       <Filter>util</Filter>
     </ClInclude>

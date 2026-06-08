@@ -13,6 +13,8 @@
 #define IOCTL_DEINITIALIZE_WFP_MONITOR    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x805, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_TRIGGER_DSE_CHECK           CTL_CODE(FILE_DEVICE_UNKNOWN, 0x806, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_TRIGGER_IMPORT_SCAN         CTL_CODE(FILE_DEVICE_UNKNOWN, 0x807, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_TEXT_INTEGRITY      CTL_CODE(FILE_DEVICE_UNKNOWN, 0x808, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_THREAD_CHECK        CTL_CODE(FILE_DEVICE_UNKNOWN, 0x809, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 // The symbolic link name for the driver.
 const wchar_t* G_SYMLINK_NAME = L"\\\\.\\OAC6";
@@ -146,6 +148,42 @@ void TriggerImportScan(HANDLE hDevice)
         std::cout << "[+] Import scan complete. Review kernel debugger output for suspicious drivers." << std::endl;
 }
 
+void TriggerTextIntegrity(HANDLE hDevice)
+{
+    std::cout << "[!] Sending IOCTL to run .text section integrity check (SHA-256 memory vs disk)." << std::endl;
+    DWORD bytesReturned = 0;
+    BOOL  success       = DeviceIoControl(
+        hDevice,
+        IOCTL_TRIGGER_TEXT_INTEGRITY,
+        nullptr, 0,
+        nullptr, 0,
+        &bytesReturned,
+        nullptr);
+
+    if (!success)
+        std::cerr << "[-] DeviceIoControl for Text Integrity failed: " << GetLastError() << std::endl;
+    else
+        std::cout << "[+] Text integrity check complete. Review kernel debugger output for mismatches." << std::endl;
+}
+
+void TriggerThreadCheck(HANDLE hDevice)
+{
+    std::cout << "[!] Sending IOCTL to run kernel thread check." << std::endl;
+    DWORD bytesReturned = 0;
+    BOOL  success       = DeviceIoControl(
+        hDevice,
+        IOCTL_TRIGGER_THREAD_CHECK,
+        nullptr, 0,
+        nullptr, 0,
+        &bytesReturned,
+        nullptr);
+
+    if (!success)
+        std::cerr << "[-] DeviceIoControl for Thread Check failed: " << GetLastError() << std::endl;
+    else
+        std::cout << "[+] Thread check complete. Review kernel debugger output for suspicious threads." << std::endl;
+}
+
 void SendUnloadRequest(HANDLE hDevice)
 {
     std::cout << "[!] Sending IOCTL to unload the driver." << std::endl;
@@ -210,6 +248,8 @@ int main()
         std::cout << "  5. Unload Driver" << std::endl;
         std::cout << "  6. Run DSE Integrity Checks" << std::endl;
         std::cout << "  7. Run Suspicious Import Scan" << std::endl;
+        std::cout << "  8. Run .text Integrity Check (SHA-256)" << std::endl;
+        std::cout << "  9. Run Kernel Thread Check" << std::endl;
         std::cout << "  0. Exit Client" << std::endl;
         std::cout << "------------------------------------------" << std::endl;
         std::cout << "Your choice: ";
@@ -244,7 +284,13 @@ int main()
             case 7:
                 TriggerImportScan(hDevice);
                 break;
-            case 0:
+            case 8:
+                TriggerTextIntegrity(hDevice);
+                break;
+            case 9:
+                TriggerThreadCheck(hDevice);
+                break;
+case 0:
                 running = false;
                 break;
             default:

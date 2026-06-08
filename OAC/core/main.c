@@ -1,24 +1,13 @@
-/**
- * @file main.c
- * @brief Main driver code for OAC6.
- *
- * This file contains the entry point and initialization code for the OAC6 kernel-mode driver.
- * It sets up the device object, symbolic link, and IRP handlers. It also includes IOCTL
- * definitions for communication with user-mode applications.
- *
- * The driver provides functionalities such as CR3 thrashing and NMI stack walking, which can be
- * triggered via IOCTLs. It also initializes a WFP-based network monitor and manages internal
- * structures.
- *
- * Note: This code is intended for educational purposes only. Unauthorized use or distribution
- * of this code may violate local laws and regulations.
- */
-
 #include "cr3_thrasher.h"
 #include "dse_check.h"
-#include "import_scan.h"
+#include "hv_checks.h"
+#include "overlay_scan.h"
+#include "suspicious_import.h"
 #include "internals.h"
+#include "offsets.h"
 #include "stackwalk.h"
+#include "text_integrity.h"
+#include "thread_check.h"
 #include "wfp_monitor.h"
 
 // =================================================================================================
@@ -32,6 +21,10 @@
 #define IOCTL_DEINITIALIZE_WFP_MONITOR    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x805, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_TRIGGER_DSE_CHECK           CTL_CODE(FILE_DEVICE_UNKNOWN, 0x806, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #define IOCTL_TRIGGER_IMPORT_SCAN         CTL_CODE(FILE_DEVICE_UNKNOWN, 0x807, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_TEXT_INTEGRITY      CTL_CODE(FILE_DEVICE_UNKNOWN, 0x808, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_THREAD_CHECK        CTL_CODE(FILE_DEVICE_UNKNOWN, 0x809, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_HV_CHECKS           CTL_CODE(FILE_DEVICE_UNKNOWN, 0x80A, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_TRIGGER_OVERLAY_SCAN        CTL_CODE(FILE_DEVICE_UNKNOWN, 0x80B, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 
 // =================================================================================================
@@ -164,6 +157,9 @@ NTSTATUS NTAPI DriverInitialize(
     // Initialize internal structures.
     InitializeInternals();
 
+    // Resolve all EPROCESS/ETHREAD/KTHREAD offsets for the running build.
+    InitializeOffsets();
+
     DbgPrintEx(0,0,"[+] Driver initialized successfully. WFP monitor is ready to be activated via IOCTL.\n");
     return Status;
 }
@@ -290,6 +286,26 @@ NTSTATUS IrpDeviceIoCtlHandler(
         case IOCTL_TRIGGER_IMPORT_SCAN:
             DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_IMPORT_SCAN received\n");
             Status = RunImportScan();
+            break;
+
+        case IOCTL_TRIGGER_TEXT_INTEGRITY:
+            DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_TEXT_INTEGRITY received\n");
+            Status = RunTextIntegrityCheck();
+            break;
+
+        case IOCTL_TRIGGER_THREAD_CHECK:
+            DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_THREAD_CHECK received\n");
+            Status = RunThreadCheck();
+            break;
+
+        case IOCTL_TRIGGER_HV_CHECKS:
+            DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_HV_CHECKS received\n");
+            RunHvAdditionalChecks();
+            break;
+
+        case IOCTL_TRIGGER_OVERLAY_SCAN:
+            DbgPrintEx(0,0,"[+] IOCTL_TRIGGER_OVERLAY_SCAN received\n");
+            RunOverlayScan();
             break;
 
         case IOCTL_UNLOAD_DRIVER:

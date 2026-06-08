@@ -103,7 +103,7 @@
       <PreprocessorDefinitions>ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Fwpkclnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Fwpkclnt.lib;Cng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -118,7 +118,7 @@
       <PreprocessorDefinitions>ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Fwpkclnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Fwpkclnt.lib;Cng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -133,7 +133,7 @@
       <PreprocessorDefinitions>ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Fwpkclnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Fwpkclnt.lib;Cng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -147,7 +147,7 @@
       <PreprocessorDefinitions>ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Fwpkclnt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Fwpkclnt.lib;Cng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
@@ -160,6 +160,7 @@
     <!-- core -->
     <ClCompile Include="core\main.c" />
     <ClCompile Include="core\internals.c" />
+    <ClCompile Include="core\offsets.c" />
 
     <!-- detections -->
     <ClCompile Include="detections\dse_check.c" />
@@ -172,9 +173,14 @@
     <ClCompile Include="detections\wfp_monitor.c" />
     <ClCompile Include="detections\shellcode_analyzer.c" />
     <ClCompile Include="detections\pt_analyzer.c" />
-    <ClCompile Include="detections\import_scan.c" />
+    <ClCompile Include="detections\suspicious_import.c" />
+    <ClCompile Include="detections\hv_checks.c" />
+    <ClCompile Include="detections\overlay_scan.c" />
+    <ClCompile Include="detections\text_integrity.c" />
+    <ClCompile Include="detections\thread_check.c" />
 
     <!-- util -->
+    <ClCompile Include="util\helpers.c" />
     <ClCompile Include="util\module.c" />
     <ClCompile Include="util\mm.c" />
     <ClCompile Include="util\serial_logger.c" />
@@ -197,6 +203,7 @@
     <!-- core -->
     <ClInclude Include="core\globals.h" />
     <ClInclude Include="core\internals.h" />
+    <ClInclude Include="core\offsets.h" />
 
     <!-- detections -->
     <ClInclude Include="detections\dse_check.h" />
@@ -206,9 +213,14 @@
     <ClInclude Include="detections\wfp_monitor.h" />
     <ClInclude Include="detections\shellcode_analyzer.h" />
     <ClInclude Include="detections\pt_analyzer.h" />
-    <ClInclude Include="detections\import_scan.h" />
+    <ClInclude Include="detections\suspicious_import.h" />
+    <ClInclude Include="detections\hv_checks.h" />
+    <ClInclude Include="detections\overlay_scan.h" />
+    <ClInclude Include="detections\text_integrity.h" />
+    <ClInclude Include="detections\thread_check.h" />
 
     <!-- util -->
+    <ClInclude Include="util\helpers.h" />
     <ClInclude Include="util\module.h" />
     <ClInclude Include="util\mm.h" />
     <ClInclude Include="util\pattern_scanner.h" />

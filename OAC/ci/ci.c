@@ -151,3 +151,28 @@ NTSTATUS VerifyModuleSignatureByRip(
 
     return Status;
 }
+
+// Validate a FILE_OBJECT directly — used when we already have the file open
+// (e.g. user-mode executable that owns a suspicious overlay window).
+NTSTATUS VerifyFileObjectSignature(_In_ PFILE_OBJECT FileObject)
+{
+    if (!G_CiValidateFileObject || !G_CiFreePolicyInfo) return STATUS_NOT_FOUND;
+    if (!FileObject) return STATUS_INVALID_PARAMETER;
+
+    POLICY_INFO   Signer    = {0};   Signer.StructSize    = sizeof(POLICY_INFO);
+    POLICY_INFO   Timestamp = {0};   Timestamp.StructSize = sizeof(POLICY_INFO);
+    LARGE_INTEGER SignTime  = {0};
+    UCHAR         Digest[64] = {0};
+    INT           DigestSz  = 64;
+    INT           DigestId  = 0;
+
+    NTSTATUS Status = G_CiValidateFileObject(
+        FileObject, 0, 0,
+        &Signer, &Timestamp,
+        &SignTime, Digest, &DigestSz, &DigestId);
+
+    if (Signer.CertChainInfo)    G_CiFreePolicyInfo(&Signer);
+    if (Timestamp.CertChainInfo) G_CiFreePolicyInfo(&Timestamp);
+
+    return Status;
+}

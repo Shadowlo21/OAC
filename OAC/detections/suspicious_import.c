@@ -1,17 +1,9 @@
-#include "import_scan.h"
+#include "suspicious_import.h"
 #include "globals.h"
 #include "module.h"
-
 #include <ntddk.h>
 #include <ntimage.h>
 
-
-// =============================================================================
-// Suspicious process/memory primitive list
-//
-// A driver importing > SUSP_THRESHOLD of these has strong cheat-enabling
-// capability and should be flagged for further review.
-// =============================================================================
 static const char* const G_SuspiciousImports[] =
 {
     "MmCopyVirtualMemory",
@@ -36,9 +28,6 @@ static const char* const G_SuspiciousImports[] =
 #define SUSP_THRESHOLD    6  // more than this many matches → flag
 
 
-// =============================================================================
-// Internal helpers
-// =============================================================================
 
 static BOOLEAN RvaInBounds(ULONG Rva, SIZE_T ImageSize)
 {
@@ -52,9 +41,6 @@ static BOOLEAN NameEqual(const char* a, const char* b)
 }
 
 
-// =============================================================================
-// Per-module import table scanner
-// =============================================================================
 static VOID ScanModuleImports(PLDR_DATA_TABLE_ENTRY Mod)
 {
     PVOID  Base      = Mod->DllBase;
@@ -88,7 +74,7 @@ static VOID ScanModuleImports(PLDR_DATA_TABLE_ENTRY Mod)
         if (!ImportRva)
         {
             // No import table at all — strong signal of manual mapping/obfuscation.
-            DbgPrintEx(0, 0, "[!] IMPORT SCAN [NoImportTable]: %wZ has no import directory "
+            DbgPrintEx(0, 0, "[!] SUSPICIOUS IMPORT [NoImportTable]: %wZ has no import directory "
                        "(manually mapped or obfuscated driver)\n", &Mod->BaseDllName);
             __leave;
         }
@@ -156,7 +142,7 @@ static VOID ScanModuleImports(PLDR_DATA_TABLE_ENTRY Mod)
     // ── Report ────────────────────────────────────────────────────────────────
     if (MatchCount > SUSP_THRESHOLD)
     {
-        DbgPrintEx(0, 0, "[!] IMPORT SCAN [SuspiciousDriver]: %wZ — %lu/%lu suspicious "
+        DbgPrintEx(0, 0, "[!] SUSPICIOUS IMPORT [SuspiciousDriver]: %wZ — %lu/%lu suspicious "
                    "imports matched (total imports=%lu)\n",
                    &Mod->BaseDllName, MatchCount, (ULONG)SUSP_LIST_COUNT, TotalImports);
 
@@ -165,22 +151,19 @@ static VOID ScanModuleImports(PLDR_DATA_TABLE_ENTRY Mod)
     }
 
     if (DescTableReadable && DescriptorCount == 0)
-        DbgPrintEx(0, 0, "[!] IMPORT SCAN [MinimalImports]: %wZ has import directory but "
+        DbgPrintEx(0, 0, "[!] SUSPICIOUS IMPORT [MinimalImports]: %wZ has import directory but "
                    "no valid import descriptors (empty or corrupt import table)\n",
                    &Mod->BaseDllName);
 }
 
 
-// =============================================================================
-// Public entry point — walks PsLoadedModuleList
-// =============================================================================
 NTSTATUS RunImportScan(VOID)
 {
     PAGED_CODE();
 
     if (!PsLoadedModuleList) return STATUS_NOT_FOUND;
 
-    DbgPrintEx(0, 0, "[*] IMPORT SCAN: scanning loaded kernel modules...\n");
+    DbgPrintEx(0, 0, "[*] SUSPICIOUS IMPORT: scanning loaded kernel modules...\n");
 
     __try
     {
@@ -198,6 +181,6 @@ NTSTATUS RunImportScan(VOID)
     }
     __except (EXCEPTION_EXECUTE_HANDLER) { }
 
-    DbgPrintEx(0, 0, "[*] IMPORT SCAN: complete.\n");
+    DbgPrintEx(0, 0, "[*] SUSPICIOUS IMPORT: complete.\n");
     return STATUS_SUCCESS;
 }

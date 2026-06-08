@@ -70,4 +70,32 @@ PageFaultIsr PROC
 	iretq                  ; Return from the interrupt
 PageFaultIsr ENDP
 
+
+; =============================================================================
+; VmfuncProbe — execute VMFUNC (ECX=0, EDX=0).
+; On bare metal with CR4.VMXE=0 this raises #UD (illegal instruction).
+; A hypervisor that intercepts VMFUNC lets this return normally.
+; Caller wraps in __try/__except to catch STATUS_ILLEGAL_INSTRUCTION.
+; =============================================================================
+VmfuncProbe PROC
+    xor ecx, ecx
+    xor edx, edx
+    DB 0Fh, 01h, 0D4h   ; vmfunc
+    ret
+VmfuncProbe ENDP
+
+
+; =============================================================================
+; VmreadProbe — execute VMREAD rax, rax (field=0, dst=rax).
+; On bare metal outside VMX operation this raises #UD.
+; A hypervisor that intercepts VMREAD lets this return normally.
+; Caller wraps in __try/__except to catch STATUS_ILLEGAL_INSTRUCTION.
+; =============================================================================
+VmreadProbe PROC
+    xor eax, eax
+    DB 0Fh, 78h, 0C0h   ; vmread rax, rax (field 0 → rax)
+    ret
+VmreadProbe ENDP
+
+
 END

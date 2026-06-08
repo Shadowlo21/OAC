@@ -6,91 +6,8 @@
 #include <ntddk.h>
 #include "zyan_stackwalker.h"
 #include "internals.h"
+#include "helpers.h"
 
-/**
-* @brief Safely reads memory from a potentially non-resident address.
-*
-* This function checks if the memory pages in the specified range are resident
-* before performing the read. It avoids page faults by verifying each page
-* with MmIsAddressValid.
-*
-* @param[in]  Source      The source address to read from.
-* @param[out] Destination The destination buffer to copy data into.
-* @param[in]  Size        The number of bytes to read.
-* @return TRUE if the memory was successfully read, FALSE if any page is non-resident.
-*/
-static BOOLEAN SafeReadMemory(
-    _In_ PVOID  Source,
-    _Out_ PVOID Destination,
-    _In_ SIZE_T Size
-)
-{
-    DbgPrintEx(0,0,"[*] SafeReadMemory: Source=%p, Destination=%p, Size=%llu\n", Source, Destination, Size);
-    if (Size == 0) return TRUE;
-
-    // Align to page boundaries and check every page in the range
-    PVOID StartPage   = (PVOID)((UINT64)Source & ~(PAGE_SIZE - 1));
-    PVOID EndPage     = (PVOID)(((UINT64)Source + Size - 1) & ~(PAGE_SIZE - 1));
-    PVOID CurrentPage = StartPage;
-
-    while (CurrentPage <= EndPage)
-    {
-        if (!MmIsAddressValid(CurrentPage))
-        {
-            return FALSE;
-        }
-        CurrentPage = (PVOID)((UINT64)CurrentPage + PAGE_SIZE);
-    }
-
-    // All pages are resident; perform the copy (non-paged operation)
-    RtlCopyMemory(Destination, Source, Size);
-    return TRUE;
-}
-
-/**
- * @brief Checks if a virtual address is within user-mode address space (x64).
- *
- * @param[in]  VirtualAddress The virtual address to check.
- * @return TRUE if the address is in user-mode space, FALSE otherwise.
- */
-static BOOLEAN IsUserModeAddress(
-    _In_ UINT64 VirtualAddress
-)
-{
-    return (VirtualAddress > 0x10000 && VirtualAddress <= 0x00007FFFFFFFFFFFULL);
-}
-
-/**
- * @brief Checks if a virtual address is executable.
- *
- * This function queries the memory protection of the page containing the
- * specified virtual address to determine if it has execute permissions.
- *
- * @param[in]  VirtualAddress The virtual address to check.
- * @return TRUE if the address is executable, FALSE otherwise.
- */
-static BOOLEAN IsAddressExecutable(
-    _In_ UINT64 VirtualAddress
-)
-{
-    MEMORY_BASIC_INFORMATION MemoryInfo;
-    SIZE_T                   ReturnLength;
-    NTSTATUS                 Status = ZwQueryVirtualMemory(
-        ZwCurrentProcess(),
-        (PVOID)VirtualAddress,
-        MemoryBasicInformation,
-        &MemoryInfo,
-        sizeof(MemoryInfo),
-        &ReturnLength
-    );
-    if (!NT_SUCCESS(Status) || ReturnLength != sizeof(MemoryInfo))
-    {
-        return FALSE;
-    }
-    // Check if page is present and has execute permissions
-    return (MemoryInfo.State == MEM_COMMIT &&
-        (MemoryInfo.Protect & (PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY)));
-}
 
 /**
  * @brief Checks if the instruction at Address is preceded by a CALL instruction.
@@ -122,7 +39,7 @@ static BOOLEAN IsPrecededByCall(
     UINT64 Current      = StartAddress & ~(PAGE_SIZE - 1);
     while (Current < Address)
     {
-        if (!IsAddressExecutable(Current))
+        if (!IsAddressExecutable((PVOID)Current))
         {
             return FALSE;
         }
@@ -181,7 +98,7 @@ static BOOLEAN IsPrecededByCall(
                         Operands[0].imm.is_relative)
                     {
                         UINT64 call_target = InstructionEnd + (INT64)Operands[0].imm.value.s;
-                        if (!IsUserModeAddress(call_target))
+                        if (!IsUserModeAddress((PVOID)call_target))
                         {
                             return FALSE;
                         }
@@ -238,8 +155,8 @@ BOOLEAN StackWalkWithZydis(
     DbgPrintEx(0,0,"Stack trace (heuristic):\n");
 
     // Validate initial RIP
-    if (IsUserModeAddress(InitialRip) &&
-        IsAddressExecutable(InitialRip))
+    if (IsUserModeAddress((PVOID)InitialRip) &&
+        IsAddressExecutable((PVOID)InitialRip))
     {
         // Add to OutFrames
         OutFrames[0] = InitialRip;
@@ -280,14 +197,14 @@ BOOLEAN StackWalkWithZydis(
 
         // Heuristics chain:
         // 1. Address space check
-        if (!IsUserModeAddress(Candidate))
+        if (!IsUserModeAddress((PVOID)Candidate))
         {
             Offset += Step;
             continue;
         }
 
         // 2. Execute permission check
-        if (!IsAddressExecutable(Candidate))
+        if (!IsAddressExecutable((PVOID)Candidate))
         {
             Offset += Step;
             continue;

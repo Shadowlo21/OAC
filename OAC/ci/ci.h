@@ -111,3 +111,8 @@ NTSTATUS ResolveCiFunctions(VOID);
 NTSTATUS VerifyModuleSignatureByRip(
     _In_ PVOID Rip
 );
+
+// Validate a FILE_OBJECT directly (caller already has the file open).
+NTSTATUS VerifyFileObjectSignature(
+    _In_ PFILE_OBJECT FileObject
+);
